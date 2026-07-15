@@ -51,9 +51,9 @@ jobs:
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
             --symbols ETHUSDT \
-            --exchange binancevision \
+            --exchange "bitget,binancevision" \
             --config config.crypto.json \
-            --lookback-days 4 \
+            --lookback-days 3 \
             --out docs \
             --cumulative reports/crypto_ci/cumulative.json
 

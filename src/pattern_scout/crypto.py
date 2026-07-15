@@ -181,8 +181,8 @@ class BitgetDataFeed:
             self._last_open_ms[symbol] = int(bars[-1]["timestamp"].value // 1_000_000)
 
 
-def make_feed(exchange: str, interval: str = "5m") -> object:
-    ex = exchange.lower()
+def _single_feed(exchange: str, interval: str) -> object:
+    ex = exchange.lower().strip()
     if ex in {"binance", "binance-spot"}:
         return BinanceDataFeed(interval)
     if ex in {"binanceus", "binance-us", "binance.us"}:
@@ -191,7 +191,55 @@ def make_feed(exchange: str, interval: str = "5m") -> object:
         return BinanceDataFeed(interval, base_url=BINANCE_VISION_BASE)
     if ex in {"bitget"}:
         return BitgetDataFeed(interval)
-    raise ExchangeError(f"Unknown exchange '{exchange}'. Use binance, binanceus or bitget.")
+    raise ExchangeError(f"Unknown exchange '{exchange}'. Use binance, binanceus, binancevision or bitget.")
+
+
+def make_feed(exchange: str, interval: str = "5m") -> object:
+    """Build a data feed. A comma-separated list (e.g. 'bitget,binancevision') returns
+    a resilient feed that tries each source in order and uses the first that responds —
+    so the bot prefers the venue where you trade but never goes dark if it's unreachable."""
+    parts = [p for p in exchange.split(",") if p.strip()]
+    if len(parts) <= 1:
+        return _single_feed(exchange, interval)
+    return ResilientFeed([_single_feed(p, interval) for p in parts])
+
+
+class ResilientFeed:
+    def __init__(self, feeds: list):
+        self.feeds = feeds
+        self.active = None
+
+    def _order(self):
+        return ([self.active] if self.active else []) + [f for f in self.feeds if f is not self.active]
+
+    def _try(self, fn):
+        errors = []
+        for f in self._order():
+            try:
+                res = fn(f)
+                self.active = f
+                return res
+            except Exception as exc:  # pragma: no cover - network
+                errors.append(f"{type(f).__name__}: {exc}")
+        raise ExchangeError("all data sources failed -> " + " | ".join(errors))
+
+    def history(self, symbol, interval=None, days=20):
+        return self._try(lambda f: f.history(symbol, interval, days) if interval
+                         else f.history(symbol, days=days))
+
+    def get_klines(self, symbol, interval=None, limit=1000):
+        return self._try(lambda f: f.get_klines(symbol, interval, limit))
+
+    def new_closed_bars(self, symbol):
+        return self._try(lambda f: f.new_closed_bars(symbol))
+
+    def prime_seen(self, symbol, bars):
+        for f in self.feeds:
+            if hasattr(f, "prime_seen"):
+                try:
+                    f.prime_seen(symbol, bars)
+                except Exception:  # pragma: no cover
+                    pass
 
 
 def seconds_to_next_bar(interval: str = "5m", pad_seconds: int = 3) -> float:

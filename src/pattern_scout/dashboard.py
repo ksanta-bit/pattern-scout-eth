@@ -622,21 +622,27 @@ def _render_crypto(payload: dict) -> str:
  });
  applyBaseline();
 
- // ---- Candlestick chart (1 minute) with entry / stop / target lines ----
+ // ---- Candlestick chart (1 minute): Bitget source, Italian time, SL/TP as
+ //      time-bounded segments, daily high/low reference lines ----
  (function(){
    let candles=(p.candles||[]);
    const sym=p.chart_symbol||'ETHUSDT';
    const el=document.getElementById('chart');
-   document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym;
+   document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym+' (Bitget · ora italiana)';
    if(!window.LightweightCharts){
      el.innerHTML='<div class="empty" style="padding:40px">Libreria grafico non caricata (riprova con la rete attiva).</div>';
      return;
    }
+   // Italian time (Europe/Rome) for the axis and the crosshair label.
+   const tHM=new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit'});
+   const tFull=new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
    const dark=matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
    const chart=LightweightCharts.createChart(el,{
      layout:{background:{color:'transparent'},textColor:dark?'#d0d0d0':'#333'},
      grid:{vertLines:{color:dark?'#222':'#eee'},horzLines:{color:dark?'#222':'#eee'}},
-     timeScale:{timeVisible:true,secondsVisible:false,borderColor:dark?'#333':'#ccc'},
+     timeScale:{timeVisible:true,secondsVisible:false,borderColor:dark?'#333':'#ccc',
+       tickMarkFormatter:(t)=>tHM.format(t*1000)},
+     localization:{locale:'it-IT',timeFormatter:(t)=>tFull.format(t*1000)},
      rightPriceScale:{borderColor:dark?'#333':'#ccc'},
      crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
      autoSize:true,
@@ -646,67 +652,111 @@ def _render_crypto(payload: dict) -> str:
      wickUpColor:'#26a65b',wickDownColor:'#e5393b',
    });
    let seeded=candles.length>0;
+   let allBars=candles.slice();
+   let lastTime=candles.length?candles[candles.length-1].time:0;
    if(seeded)series.setData(candles);
-   else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico le candele…</div>');
-   // Active positions: entry / stop / target lines + entry marker + side.
-   const markers=[];
-   opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
-     const isLong=(t.side==='long');
-     [['Entry',Number(t.entry_price),'#2962ff',LightweightCharts.LineStyle.Solid],
-      ['Stop',Number(t.stop_price),'#e5393b',LightweightCharts.LineStyle.Dashed],
-      ['Target',Number(t.target_price),'#26a65b',LightweightCharts.LineStyle.Dashed],
-      ['Liq',t.liquidation_price!=null?Number(t.liquidation_price):null,'#b26a00',LightweightCharts.LineStyle.Dotted]
-     ].forEach(([title,price,color,style])=>{
-       if(price==null||!isFinite(price))return;
-       series.createPriceLine({price:price,color:color,lineWidth:2,lineStyle:style,
-         axisLabelVisible:true,title:title});
+   else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico le candele da Bitget…</div>');
+
+   // --- Positions: SL/TP/entry as segments spanning ONLY entry->exit (open: entry->now) ---
+   const openLines=[];   // {series, et, price} to grow while the position is open
+   function drawPositions(){
+     const markers=[];
+     const pos=[].concat(
+       opens.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:true})),
+       closed.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:false}))
+     );
+     pos.forEach(t=>{
+       const isLong=(t.side==='long');
+       const et=Math.floor(Date.parse(t.entry_time)/1000);
+       if(!isFinite(et))return;
+       let xt=t.exit_time?Math.floor(Date.parse(t.exit_time)/1000):(lastTime||et+60);
+       if(xt<=et)xt=et+60;
+       [['#2962ff',+t.entry_price,2,LightweightCharts.LineStyle.Solid],      // entry
+        ['#e5393b',+t.stop_price,2,LightweightCharts.LineStyle.Dashed],       // SL
+        [t.target_price!=null?'#26a65b':null,t.target_price!=null?+t.target_price:null,2,LightweightCharts.LineStyle.Dashed], // TP
+        ['#b26a00',t.liquidation_price!=null?+t.liquidation_price:null,1,LightweightCharts.LineStyle.Dotted] // liq
+       ].forEach(([color,price,lw,style],idx)=>{
+         if(color==null||price==null||!isFinite(price))return;
+         const ls=chart.addLineSeries({color:color,lineWidth:lw,lineStyle:style,
+           priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+         ls.setData([{time:et,value:price},{time:xt,value:price}]);
+         if(t.isOpen&&idx<3)openLines.push({series:ls,et:et,price:price});
+       });
+       markers.push({time:et,position:isLong?'belowBar':'aboveBar',
+         color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
+         text:(isLong?'LONG':'SHORT')+' @'+(+t.entry_price).toFixed(2)});
+       if(t.exit_time)markers.push({time:xt,position:isLong?'aboveBar':'belowBar',
+         color:'#888',shape:'circle',text:'EXIT'});
      });
-     const et=Date.parse(t.entry_time)/1000;
-     if(isFinite(et))markers.push({time:Math.floor(et),position:isLong?'belowBar':'aboveBar',
-       color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
-       text:(isLong?'LONG':'SHORT')+' @'+Number(t.entry_price).toFixed(2)});
-   });
-   if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
-   chart.timeScale().fitContent();
-   // Side badge in the legend
-   const openHere=opens.filter(t=>(t.symbol||'')===sym);
-   if(openHere.length){
-     const lg=document.getElementById('legend');
-     openHere.forEach(t=>{const s=document.createElement('span');
-       s.innerHTML=`<span class="side-tag ${t.side}">${(t.side||'').toUpperCase()}</span>`;lg.appendChild(s);});
+     if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
    }
+   function growOpenLines(){
+     openLines.forEach(o=>o.series.setData([{time:o.et,value:o.price},{time:lastTime,value:o.price}]));
+   }
+
+   // --- Daily high / low (current UTC day) reference lines ---
+   let dhi=null,dlo=null;
+   function drawDailyHL(){
+     if(!allBars.length)return;
+     const day=(t)=>Math.floor(t/86400);
+     const d=day(allBars[allBars.length-1].time);
+     const db=allBars.filter(b=>day(b.time)===d);
+     if(!db.length)return;
+     const hi=Math.max.apply(null,db.map(b=>b.high));
+     const lo=Math.min.apply(null,db.map(b=>b.low));
+     const t0=allBars[0].time,t1=allBars[allBars.length-1].time;
+     if(!dhi)dhi=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(!dlo)dlo=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     dhi.setData([{time:t0,value:hi},{time:t1,value:hi}]);
+     dlo.setData([{time:t0,value:lo},{time:t1,value:lo}]);
+   }
+
+   // side badges in the legend
+   const openHere=opens.filter(t=>(t.symbol||'')===sym);
+   if(openHere.length){const lg=document.getElementById('legend');
+     openHere.forEach(t=>{const s=document.createElement('span');
+       s.innerHTML=`<span class="side-tag ${t.side}">${(t.side||'').toUpperCase()}</span>`;lg.appendChild(s);});}
+   const lg2=document.getElementById('legend');
+   if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>');
+
+   if(seeded){drawPositions();drawDailyHL();chart.timeScale().fitContent();}
    new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
 
-   // ---- Live update: refresh 1-minute candles from Binance every 60s ----
-   // The GitHub workflow refreshes positions every ~5 min, but the price chart
-   // stays live minute-by-minute directly in the browser.
-   const hosts=['https://data-api.binance.vision','https://api.binance.com','https://api.binance.us'];
-   let lastTime=candles.length?candles[candles.length-1].time:0;
-   async function tick(){
-     const limit=seeded?3:300;               // seed the whole chart if we started empty
-     for(const h of hosts){
-       try{
-         const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=${limit}`,{cache:'no-store'});
-         if(!r.ok)continue;
-         const arr=await r.json();
-         const bars=arr.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
-         if(!seeded){
-           series.setData(bars); seeded=true;
-           if(bars.length)lastTime=bars[bars.length-1].time;
-           const w=document.getElementById('chartWait'); if(w)w.remove();
-           chart.timeScale().fitContent();
-         }else{
-           bars.forEach(b=>{ if(b.time>=lastTime){series.update(b);lastTime=b.time;} });
-         }
-         const last=arr[arr.length-1];
-         if(last){
-           document.getElementById('updated').textContent=
-             'Prezzo live '+sym+': '+(+last[4]).toLocaleString('it-IT',{maximumFractionDigits:2})+
-             ' · aggiornato '+new Date().toLocaleTimeString('it-IT');
-         }
-         return; // success
-       }catch(e){/* try next host */}
+   // --- Live data: Bitget first (your trading venue), Binance.vision as fallback ---
+   function mergeBars(bars){
+     bars.forEach(b=>{
+       if(allBars.length&&b.time===allBars[allBars.length-1].time)allBars[allBars.length-1]=b;
+       else if(!allBars.length||b.time>allBars[allBars.length-1].time)allBars.push(b);
+     });
+   }
+   async function fetchBars(limit){
+     try{
+       const r=await fetch(`https://api.bitget.com/api/v2/spot/market/candles?symbol=${sym}&granularity=1min&limit=${limit}`,{cache:'no-store'});
+       if(r.ok){const j=await r.json();const d=(j&&j.data)||[];
+         if(d.length)return d.map(k=>({time:Math.floor(+k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]})).sort((a,b)=>a.time-b.time);}
+     }catch(e){}
+     for(const h of ['https://data-api.binance.vision','https://api.binance.com']){
+       try{const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=${limit}`,{cache:'no-store'});
+         if(r.ok){const arr=await r.json();return arr.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));}
+       }catch(e){}
      }
+     return null;
+   }
+   async function tick(){
+     const bars=await fetchBars(seeded?3:300);
+     if(!bars||!bars.length)return;
+     if(!seeded){
+       series.setData(bars);seeded=true;allBars=bars.slice();lastTime=bars[bars.length-1].time;
+       const w=document.getElementById('chartWait');if(w)w.remove();
+       drawPositions();drawDailyHL();chart.timeScale().fitContent();
+     }else{
+       bars.forEach(b=>{if(b.time>=lastTime){series.update(b);lastTime=b.time;}});
+       mergeBars(bars);growOpenLines();drawDailyHL();
+     }
+     const last=bars[bars.length-1];
+     if(last)document.getElementById('updated').textContent=
+       'Prezzo live '+sym+' (Bitget): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2})+
+       ' · '+tHM.format(Date.now());
    }
    tick(); setInterval(tick,60000);
  })();
