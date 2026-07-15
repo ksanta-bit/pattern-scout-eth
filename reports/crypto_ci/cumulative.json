@@ -20,6 +20,9 @@
       "status": "closed"
     }
   },
-  "equity": 10375.93304396114,
-  "updated": "2026-07-15T23:38:38"
+  "equity": 475.93304396113945,
+  "updated": "2026-07-15T21:55:58",
+  "open": {},
+  "starting_capital": 100.0,
+  "equity_incl_unrealized": 475.93304396113945
 }

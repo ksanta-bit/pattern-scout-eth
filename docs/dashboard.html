@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pattern Scout — Paper ETH</title>
+<style>
+ :root{color-scheme:light dark;--bg:Canvas;--fg:CanvasText;
+  --muted:color-mix(in srgb,CanvasText 62%,Canvas 38%);
+  --card:color-mix(in srgb,Canvas 94%,CanvasText 6%);
+  --border:color-mix(in srgb,CanvasText 18%,Canvas 82%);
+  --accent:#0a7cff;--good:#0a8f55;--bad:#c23b32;--warn:#b77900;}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.35}
+ main{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:22px 0 40px}
+ header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+ h1{margin:0;font-size:22px;font-weight:600}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+ button{font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
+ button.secondary{background:var(--card);color:var(--fg)}
+ .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+ .card{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:14px}
+ .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+ .value{margin-top:6px;font-size:24px;font-weight:700}
+ .value.good{color:var(--good)}.value.bad{color:var(--bad)}
+ h2{font-size:15px;margin:20px 0 8px}
+ .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+ table{width:100%;min-width:720px;border-collapse:collapse;font-size:13px}
+ th,td{padding:9px 11px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+ th{color:var(--muted);font-weight:600;background:color-mix(in srgb,var(--card) 80%,var(--bg) 20%)}
+ tr:last-child td{border-bottom:0}
+ .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px}
+ .pill.target,.g{color:var(--good)}.pill.stop,.pill.liquidation,.b{color:var(--bad)}
+ .pill.session_close{color:var(--warn)}
+ .empty{color:var(--muted);padding:16px;text-align:center}
+ .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;
+  animation:pulse 1.6s infinite}
+ @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+ @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><main>
+ <header>
+   <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1></div>
+   <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
+ </header>
+ <div class="sub" id="updated"></div>
+ <section class="grid">
+   <div class="card"><div class="label">Capitale iniziale</div><div class="value" id="cap">100</div></div>
+   <div class="card"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
+   <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
+   <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
+ </section>
+ <h2>Operazioni aperte <span class="sub" id="openCount"></span></h2>
+ <div class="table-wrap"><table><thead><tr>
+   <th>Simbolo</th><th>Lato</th><th>Entry</th><th>Prezzo ora</th><th>Qty</th><th>Leva</th>
+   <th>Liquidazione</th><th>Profitto ora</th><th>R</th></tr></thead>
+   <tbody id="openRows"></tbody></table></div>
+ <h2>Operazioni chiuse</h2>
+ <div class="table-wrap"><table><thead><tr>
+   <th>Sessione</th><th>Simbolo</th><th>Segnale</th><th>Entry</th><th>Exit</th>
+   <th>Lordo</th><th>Fee</th><th>PnL netto</th><th>R</th><th>Uscita</th></tr></thead>
+   <tbody id="closedRows"></tbody></table></div>
+ <div class="sub" style="margin-top:14px">
+   Il pulsante ripristina il capitale <em>visualizzato</em> a 100 USDT da questo momento (baseline locale).
+   Per azzerare davvero lo storico sul server: esegui <code>paper-crypto --reset</code> in locale
+   oppure lancia il workflow GitHub con l'opzione <code>reset</code>.
+ </div>
+</main>
+<script id="payload" type="application/json">{"starting_capital": 100.0, "equity": 475.93304396113945, "unrealized": 0, "equity_incl_unrealized": 475.93304396113945, "closed": [{"symbol": "ETHUSDT", "session": "2025-06-27", "side": "long", "signal_type": "john_wick", "signal_time": "2025-06-27T00:15:00+00:00", "entry_time": "2025-06-27T00:20:00+00:00", "exit_time": "2025-06-27T00:30:00+00:00", "entry_price": 2955.31692, "exit_price": 3018.33008, "stop_price": 2921.7933120000002, "target_price": 3019.84, "quantity": 5.965944954373652, "pnl": 375.93304396113945, "r_multiple": 1.8796652198056973, "exit_reason": "target", "atr_fraction": 1.6037737781121442, "status": "closed"}], "open": [], "summary": {"starting_capital": 100.0, "total_trades": 1, "wins": 1, "losses": 0, "win_rate": 1.0, "total_pnl": 375.93304396113945, "avg_r": 1.8796652198056973, "profit_factor": null, "ending_equity": 475.93304396113945, "equity_incl_unrealized": 475.93304396113945, "open_positions": 0}}</script>
+<script>
+ const p=JSON.parse(document.getElementById('payload').textContent);
+ const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
+ const num=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2});
+ const q4=new Intl.NumberFormat('it-IT',{maximumFractionDigits:4});
+ const KEY='patternscout_eth_baseline';
+ const cap=Number(p.starting_capital)||100;
+ const closed=(p.closed||[]);
+ const opens=(p.open||[]);
+ document.getElementById('updated').textContent='Ultimo aggiornamento: '+(p.summary&&p.summary.updated||new Date().toLocaleString('it-IT'));
+
+ function baseline(){const v=localStorage.getItem(KEY);return v?JSON.parse(v):{count:0,capital:cap};}
+ function applyBaseline(){
+   const b=baseline();
+   const shown=closed.slice(b.count);            // trade dopo il reset
+   const realized=shown.reduce((a,t)=>a+(Number(t.pnl)||0),0);
+   const unreal=opens.reduce((a,t)=>a+(Number(t.unrealized_pnl)||0),0);
+   const eq=b.capital+realized;
+   document.getElementById('cap').textContent=money.format(b.capital);
+   document.getElementById('eq').textContent=money.format(eq);
+   const eqU=document.getElementById('eqU');eqU.textContent=money.format(eq+unreal);
+   eqU.className='value '+((eq+unreal)>=b.capital?'good':'bad');
+   const tp=document.getElementById('pnl');tp.textContent=money.format(realized);
+   tp.className='value '+(realized>0?'good':realized<0?'bad':'');
+   document.getElementById('openCount').textContent=opens.length?`(${opens.length} live)`:'';
+   document.getElementById('openRows').innerHTML=opens.map(t=>{
+     const u=Number(t.unrealized_pnl)||0;
+     return `<tr><td>${t.symbol||''}</td><td>${t.side||''}</td>
+      <td>${money.format(Number(t.entry_price)||0)}</td>
+      <td>${t.current_price!=null?money.format(t.current_price):'—'}</td>
+      <td>${q4.format(Number(t.quantity)||0)}</td><td>${num.format(Number(t.leverage)||1)}x</td>
+      <td class="b">${t.liquidation_price!=null?money.format(t.liquidation_price):'—'}</td>
+      <td class="${u>=0?'g':'b'}">${money.format(u)}</td>
+      <td>${num.format(Number(t.unrealized_r)||0)}</td></tr>`;}).join('')
+      ||'<tr><td colspan="9" class="empty">Nessuna operazione aperta.</td></tr>';
+   const list=shown.slice().reverse();
+   document.getElementById('closedRows').innerHTML=list.map(t=>`<tr>
+      <td>${t.session||''}</td><td>${t.symbol||''}</td><td>${t.signal_type||''}</td>
+      <td>${money.format(Number(t.entry_price)||0)}</td><td>${money.format(Number(t.exit_price)||0)}</td>
+      <td>${money.format(Number(t.gross_pnl)||0)}</td><td class="b">${money.format(Number(t.fees)||0)}</td>
+      <td class="${(Number(t.pnl)||0)>=0?'g':'b'}">${money.format(Number(t.pnl)||0)}</td>
+      <td>${num.format(Number(t.r_multiple)||0)}</td>
+      <td><span class="pill ${t.exit_reason||''}">${t.exit_reason||''}</span></td></tr>`).join('')
+      ||'<tr><td colspan="10" class="empty">Nessuna operazione chiusa dal reset.</td></tr>';
+ }
+ document.getElementById('resetBtn').addEventListener('click',()=>{
+   localStorage.setItem(KEY,JSON.stringify({count:closed.length,capital:cap}));
+   applyBaseline();
+ });
+ applyBaseline();
+</script>
+</body></html>
