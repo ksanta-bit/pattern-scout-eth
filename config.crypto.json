@@ -49,6 +49,14 @@
     "taker_fee_pct": 0.0006,
     "maker_fee_pct": 0.0002
   },
+  "exit_management": {
+    "mode": "trailing",
+    "initial_stop_atr_fraction": 0.25,
+    "breakeven_trigger_r": 1.0,
+    "trail_trigger_r": 1.0,
+    "trail_atr_fraction": 0.6,
+    "use_fixed_target": false
+  },
   "risk": {
     "account_size": 100.0,
     "risk_fraction": 0.02,

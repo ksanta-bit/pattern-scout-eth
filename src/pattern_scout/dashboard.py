@@ -464,9 +464,11 @@ def _render_dashboard(payload: dict) -> str:
 
 def build_crypto_dashboard(output_path: str | Path, starting_capital: float, equity: float,
                            unrealized: float, closed: list, open_positions: list,
-                           summary: dict) -> Path:
-    """Interactive paper dashboard: starting capital, reset button, open-positions
-    log with live (unrealized) profit, and closed-trades log with net PnL."""
+                           summary: dict, chart_symbol: str | None = None,
+                           chart_candles: list | None = None) -> Path:
+    """Interactive paper dashboard: 1-minute candlestick chart with entry/stop/target
+    lines for active positions, reset button, open-positions log with live profit,
+    and closed-trades log with net PnL."""
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     payload = _json_safe({
@@ -477,6 +479,8 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float, equ
         "closed": closed,
         "open": open_positions,
         "summary": summary,
+        "chart_symbol": chart_symbol or "",
+        "candles": chart_candles or [],
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
     return output
@@ -521,8 +525,17 @@ def _render_crypto(payload: dict) -> str:
  .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;
   animation:pulse 1.6s infinite}
  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
- @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
-</style></head><body><main>
+ #chart{width:100%;height:420px;border:1px solid var(--border);border-radius:10px;position:relative}
+ .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 2px 0}
+ .legend b{color:var(--fg)}
+ .dot{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
+ .side-tag{font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px}
+ .side-tag.long{background:color-mix(in srgb,var(--good) 22%,var(--card));color:var(--good)}
+ .side-tag.short{background:color-mix(in srgb,var(--bad) 22%,var(--card));color:var(--bad)}
+ @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}#chart{height:320px}}
+</style>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+</head><body><main>
  <header>
    <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1></div>
    <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
@@ -534,6 +547,13 @@ def _render_crypto(payload: dict) -> str:
    <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
    <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
  </section>
+ <h2 id="chartTitle">Grafico 1 minuto</h2>
+ <div id="chart"></div>
+ <div class="legend" id="legend">
+   <span><span class="dot" style="background:#2962ff"></span>Entry</span>
+   <span><span class="dot" style="background:#e5393b"></span>Stop loss</span>
+   <span><span class="dot" style="background:#26a65b"></span>Take profit</span>
+ </div>
  <h2>Operazioni aperte <span class="sub" id="openCount"></span></h2>
  <div class="table-wrap"><table><thead><tr>
    <th>Simbolo</th><th>Lato</th><th>Entry</th><th>Prezzo ora</th><th>Qty</th><th>Leva</th>
@@ -601,6 +621,87 @@ def _render_crypto(payload: dict) -> str:
    applyBaseline();
  });
  applyBaseline();
+
+ // ---- Candlestick chart (1 minute) with entry / stop / target lines ----
+ (function(){
+   const candles=(p.candles||[]);
+   const sym=p.chart_symbol||'ETHUSDT';
+   const el=document.getElementById('chart');
+   document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym;
+   if(!window.LightweightCharts||!candles.length){
+     el.innerHTML='<div class="empty" style="padding:40px">Grafico non disponibile (in attesa di candele dal prossimo aggiornamento).</div>';
+     return;
+   }
+   const dark=matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
+   const chart=LightweightCharts.createChart(el,{
+     layout:{background:{color:'transparent'},textColor:dark?'#d0d0d0':'#333'},
+     grid:{vertLines:{color:dark?'#222':'#eee'},horzLines:{color:dark?'#222':'#eee'}},
+     timeScale:{timeVisible:true,secondsVisible:false,borderColor:dark?'#333':'#ccc'},
+     rightPriceScale:{borderColor:dark?'#333':'#ccc'},
+     crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+     autoSize:true,
+   });
+   const series=chart.addCandlestickSeries({
+     upColor:'#26a65b',downColor:'#e5393b',borderVisible:false,
+     wickUpColor:'#26a65b',wickDownColor:'#e5393b',
+   });
+   series.setData(candles);
+   // Active positions: entry / stop / target lines + entry marker + side.
+   const markers=[];
+   opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
+     const isLong=(t.side==='long');
+     [['Entry',Number(t.entry_price),'#2962ff',LightweightCharts.LineStyle.Solid],
+      ['Stop',Number(t.stop_price),'#e5393b',LightweightCharts.LineStyle.Dashed],
+      ['Target',Number(t.target_price),'#26a65b',LightweightCharts.LineStyle.Dashed],
+      ['Liq',t.liquidation_price!=null?Number(t.liquidation_price):null,'#b26a00',LightweightCharts.LineStyle.Dotted]
+     ].forEach(([title,price,color,style])=>{
+       if(price==null||!isFinite(price))return;
+       series.createPriceLine({price:price,color:color,lineWidth:2,lineStyle:style,
+         axisLabelVisible:true,title:title});
+     });
+     const et=Date.parse(t.entry_time)/1000;
+     if(isFinite(et))markers.push({time:Math.floor(et),position:isLong?'belowBar':'aboveBar',
+       color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
+       text:(isLong?'LONG':'SHORT')+' @'+Number(t.entry_price).toFixed(2)});
+   });
+   if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
+   chart.timeScale().fitContent();
+   // Side badge in the legend
+   const openHere=opens.filter(t=>(t.symbol||'')===sym);
+   if(openHere.length){
+     const lg=document.getElementById('legend');
+     openHere.forEach(t=>{const s=document.createElement('span');
+       s.innerHTML=`<span class="side-tag ${t.side}">${(t.side||'').toUpperCase()}</span>`;lg.appendChild(s);});
+   }
+   new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
+
+   // ---- Live update: refresh 1-minute candles from Binance every 60s ----
+   // The GitHub workflow refreshes positions every ~5 min, but the price chart
+   // stays live minute-by-minute directly in the browser.
+   const hosts=['https://api.binance.com','https://api.binance.us','https://data-api.binance.vision'];
+   let lastTime=candles.length?candles[candles.length-1].time:0;
+   async function tick(){
+     for(const h of hosts){
+       try{
+         const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=3`,{cache:'no-store'});
+         if(!r.ok)continue;
+         const arr=await r.json();
+         arr.forEach(k=>{
+           const bar={time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]};
+           if(bar.time>=lastTime){series.update(bar);lastTime=bar.time;}
+         });
+         const last=arr[arr.length-1];
+         if(last){
+           document.getElementById('updated').textContent=
+             'Prezzo live '+sym+': '+(+last[4]).toLocaleString('it-IT',{maximumFractionDigits:2})+
+             ' · aggiornato '+new Date().toLocaleTimeString('it-IT');
+         }
+         return; // success
+       }catch(e){/* try next host */}
+     }
+   }
+   tick(); setInterval(tick,60000);
+ })();
 </script>
 </body></html>
 """

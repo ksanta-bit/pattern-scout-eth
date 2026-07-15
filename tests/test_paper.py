@@ -125,5 +125,41 @@ class LeverageAndFeeTests(unittest.TestCase):
         self.assertIsNotNone(t.liquidation_price)
 
 
+class TrailingStopTests(unittest.TestCase):
+    def _engine(self):
+        from pattern_scout.config import ExitManagementConfig
+        from pattern_scout.paper import PaperBroker, SymbolEngine
+        cfg = PatternScoutConfig(exit_management=ExitManagementConfig(
+            mode="trailing", initial_stop_atr_fraction=0.25, breakeven_trigger_r=1.0,
+            trail_trigger_r=1.0, trail_atr_fraction=0.6, use_fixed_target=False))
+        return SymbolEngine("X", cfg, PaperBroker(cfg))
+
+    def _trade(self, side, entry, initial_stop, atr):
+        from pattern_scout.paper import PaperTrade
+        return PaperTrade(symbol="X", session="s", side=side, signal_type="john_wick",
+                          signal_time="t", entry_time="t", exit_time=None, entry_price=entry,
+                          exit_price=None, stop_price=initial_stop, target_price=None, quantity=1.0,
+                          pnl=None, r_multiple=None, exit_reason=None, atr_fraction=1.0,
+                          atr=atr, initial_stop=initial_stop, trail_extreme=entry)
+
+    def test_long_trailing_moves_to_breakeven_then_trails(self):
+        eng = self._engine()
+        trade = self._trade("long", entry=100.0, initial_stop=95.0, atr=10.0)  # risk = 5
+        eng._update_trailing(trade, {"high": 106.0, "low": 101.0, "close": 105.0})  # +1.2R
+        self.assertTrue(trade.breakeven_done)
+        self.assertGreaterEqual(trade.stop_price, 100.0)  # at least break-even
+        eng._update_trailing(trade, {"high": 112.0, "low": 108.0, "close": 111.0})  # +2.4R
+        # stop trails to extreme - 0.6*ATR = 112 - 6 = 106
+        self.assertAlmostEqual(trade.stop_price, 106.0, places=6)
+
+    def test_trailing_never_loosens_stop(self):
+        eng = self._engine()
+        trade = self._trade("long", entry=100.0, initial_stop=95.0, atr=10.0)
+        eng._update_trailing(trade, {"high": 112.0, "low": 108.0, "close": 111.0})
+        high = trade.stop_price
+        eng._update_trailing(trade, {"high": 104.0, "low": 103.0, "close": 103.5})  # pullback
+        self.assertGreaterEqual(trade.stop_price, high)  # stop must not move down
+
+
 if __name__ == "__main__":
     unittest.main()

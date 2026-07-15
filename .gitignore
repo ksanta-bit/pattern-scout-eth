@@ -4,3 +4,22 @@ __pycache__/
 .DS_Store
 .pattern_scout_state.json
 reports/dashboard_server.log
+
+# Local test / scratch outputs (never publish these to the live dashboard)
+reports/_verify/
+reports/_v/
+reports/opt_check/
+reports/opt_ranking.json
+reports/paper/
+reports/paper_both/
+reports/paper_live/
+reports/crypto_live/
+reports/crypto_ci_open/
+reports/sample/dashboard.html
+config.optimized.json
+data/opt_sample_5m.csv
+
+# CI state is kept, but never local scratch copies of it
+reports/crypto_ci/annotated_candles.csv
+reports/crypto_ci/dashboard.html
+reports/crypto_ci/index.html

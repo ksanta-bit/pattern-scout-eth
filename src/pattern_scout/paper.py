@@ -66,6 +66,10 @@ class PaperTrade:
     notional: Optional[float] = None
     fees: Optional[float] = None
     gross_pnl: Optional[float] = None
+    atr: Optional[float] = None
+    initial_stop: Optional[float] = None
+    trail_extreme: Optional[float] = None
+    breakeven_done: bool = False
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -252,7 +256,26 @@ class SymbolEngine:
         self.tz = ZoneInfo(config.timezone)
         self.session_close = parse_clock(config.session_close)
         self._rows: list[dict] = []
+        self._minute_bars: list[dict] = []  # optional 1m bars for precise stop/target sequencing
         self.state = SymbolState()
+
+    def set_minute_bars(self, bars: list) -> None:
+        """Provide 1-minute candles so open positions resolve stop/target/liq in the
+        right order within each 5-minute window. Bars: dicts with timestamp/high/low/close."""
+        norm = []
+        for b in bars or []:
+            row = _normalize_bar(b, self.tz)
+            norm.append(row)
+        norm.sort(key=lambda r: r["timestamp"])
+        self._minute_bars = norm
+
+    def _minute_subbars(self, bar_ts) -> list:
+        """1-minute bars whose timestamp falls in [bar_ts, bar_ts + base_timeframe)."""
+        if not self._minute_bars:
+            return []
+        step = pd.Timedelta(minutes=self.config.base_timeframe_minutes)
+        end = bar_ts + step
+        return [b for b in self._minute_bars if bar_ts <= b["timestamp"] < end]
 
     @property
     def bars(self) -> pd.DataFrame:
@@ -408,7 +431,19 @@ class SymbolEngine:
             return
 
         entry_price = _slip_entry(sig.trigger_price, sig.side, self.config)
-        risk_per_unit = abs(entry_price - sig.stop_price) * self.config.risk.point_value
+
+        # Optional soft initial stop: widen the stop beyond the wick by k*ATR so a
+        # noisy retest right after entry does not fail the trade.
+        em = self.config.exit_management
+        atr = None
+        if sig.atr_fraction:
+            atr = (sig.opening_high - sig.opening_low) / sig.atr_fraction
+        stop_price = float(sig.stop_price)
+        if em.mode == "trailing" and em.initial_stop_atr_fraction > 0 and atr:
+            pad = em.initial_stop_atr_fraction * atr
+            stop_price = stop_price - pad if sig.side == "long" else stop_price + pad
+
+        risk_per_unit = abs(entry_price - stop_price) * self.config.risk.point_value
         if risk_per_unit <= 0 or not np.isfinite(risk_per_unit):
             self.state.phase = "armed"
             self.state.locked_signal = None
@@ -427,16 +462,72 @@ class SymbolEngine:
             trade.margin = float(margin)
             trade.notional = float(notional)
             trade.liquidation_price = float(liq) if liq is not None else None
+            trade.stop_price = float(stop_price)
+            trade.initial_stop = float(stop_price)
+            trade.atr = float(atr) if atr else None
+            trade.trail_extreme = float(entry_price)
+            if em.mode == "trailing" and not em.use_fixed_target:
+                trade.target_price = None  # let the winner run; exit on the trailing stop
         self.state.phase = "in_position"
         self.state.trades_done += 1
         liq_txt = f" liq {liq:.2f}" if liq is not None else ""
+        tgt_txt = f"{trade.target_price:.2f}" if (trade and trade.target_price is not None) else "trailing"
+        stop_txt = f"{trade.stop_price:.2f}" if trade else f"{stop_price:.2f}"
         self._emit(
             f"ENTRY {sig.side} {qty:.4f} @ {entry_price:.2f} "
-            f"(stop {sig.stop_price:.2f} / target {sig.target_price:.2f} | "
+            f"(stop {stop_txt} / target {tgt_txt} | "
             f"{lev:.0f}x margin {margin:.2f}{liq_txt})"
         )
         # Same bar can also hit stop/target; the backtester checks the entry bar too.
         self._manage_position(row)
+
+    def _update_trailing(self, trade, bar: dict) -> None:
+        """Move the stop to break-even at +Nr, then trail by k*ATR behind the extreme."""
+        em = self.config.exit_management
+        if em.mode != "trailing" or not trade.atr or trade.initial_stop is None:
+            return
+        entry = trade.entry_price
+        risk = abs(entry - trade.initial_stop)
+        if risk <= 0:
+            return
+        if trade.side == "long":
+            trade.trail_extreme = max(trade.trail_extreme or entry, bar["high"])
+            r = (trade.trail_extreme - entry) / risk
+            if r >= em.breakeven_trigger_r and not trade.breakeven_done:
+                trade.stop_price = max(trade.stop_price, entry)
+                trade.breakeven_done = True
+            if r >= em.trail_trigger_r:
+                trade.stop_price = max(trade.stop_price, trade.trail_extreme - em.trail_atr_fraction * trade.atr)
+        else:
+            trade.trail_extreme = min(trade.trail_extreme or entry, bar["low"])
+            r = (entry - trade.trail_extreme) / risk
+            if r >= em.breakeven_trigger_r and not trade.breakeven_done:
+                trade.stop_price = min(trade.stop_price, entry)
+                trade.breakeven_done = True
+            if r >= em.trail_trigger_r:
+                trade.stop_price = min(trade.stop_price, trade.trail_extreme + em.trail_atr_fraction * trade.atr)
+
+    def _exit_check(self, bar: dict, trade) -> tuple:
+        """Return (exit_price, reason, exit_ts) if this bar hits stop/target/liq, else (None, None, None).
+        Uses only high/low, so it works for both 5-minute and 1-minute bars."""
+        side = trade.side
+        liq = trade.liquidation_price
+        tgt = trade.target_price
+        if side == "long":
+            if liq is not None and bar["low"] <= liq and liq >= trade.stop_price:
+                return liq, "liquidation", bar["timestamp"]
+            if bar["low"] <= trade.stop_price:
+                return _slip_exit(trade.stop_price, side, "stop", self.config), "stop", bar["timestamp"]
+            if tgt is not None and bar["high"] >= tgt:
+                return _slip_exit(tgt, side, "target", self.config), "target", bar["timestamp"]
+        else:
+            if liq is not None and bar["high"] >= liq and liq <= trade.stop_price:
+                return liq, "liquidation", bar["timestamp"]
+            if bar["high"] >= trade.stop_price:
+                return _slip_exit(trade.stop_price, side, "stop", self.config), "stop", bar["timestamp"]
+            if tgt is not None and bar["low"] <= tgt:
+                return _slip_exit(tgt, side, "target", self.config), "target", bar["timestamp"]
+        return None, None, None
 
     def _manage_position(self, row: dict) -> None:
         trade = self.broker.open_positions.get(self.symbol) if isinstance(self.broker, PaperBroker) else None
@@ -444,33 +535,28 @@ class SymbolEngine:
         if trade is None or sig is None:
             return
         ts = row["timestamp"]
-        side = trade.side
-        exit_price = None
-        reason = None
-        liq = trade.liquidation_price
-        if side == "long":
-            # Liquidation is a hard hazard that fires before a stop further away.
-            if liq is not None and row["low"] <= liq and liq >= trade.stop_price:
-                exit_price, reason = liq, "liquidation"
-            elif row["low"] <= trade.stop_price:
-                exit_price, reason = _slip_exit(trade.stop_price, side, "stop", self.config), "stop"
-            elif row["high"] >= trade.target_price:
-                exit_price, reason = _slip_exit(trade.target_price, side, "target", self.config), "target"
+        exit_price = reason = exit_ts = None
+
+        # If we have 1-minute candles for this 5-minute window, walk them IN ORDER so
+        # that stop vs target vs liquidation is sequenced correctly (matters at high leverage).
+        sub = self._minute_subbars(ts)
+        if sub:
+            for mb in sub:
+                self._update_trailing(trade, mb)   # raise the stop as price moves in favor
+                exit_price, reason, exit_ts = self._exit_check(mb, trade)
+                if exit_price is not None:
+                    break
         else:
-            if liq is not None and row["high"] >= liq and liq <= trade.stop_price:
-                exit_price, reason = liq, "liquidation"
-            elif row["high"] >= trade.stop_price:
-                exit_price, reason = _slip_exit(trade.stop_price, side, "stop", self.config), "stop"
-            elif row["low"] <= trade.target_price:
-                exit_price, reason = _slip_exit(trade.target_price, side, "target", self.config), "target"
+            self._update_trailing(trade, row)
+            exit_price, reason, exit_ts = self._exit_check(row, trade)
 
         if exit_price is None and (
             self._is_session_close(ts) and self.config.execution.force_exit_at_session_close
         ):
-            exit_price, reason = float(row["close"]), "session_close"
+            exit_price, reason, exit_ts = float(row["close"]), "session_close", ts
 
         if exit_price is not None:
-            closed = self.broker.close_trade(self.symbol, ts, exit_price, reason)
+            closed = self.broker.close_trade(self.symbol, exit_ts or ts, exit_price, reason)
             self.state.phase = "done"
             self.state.locked_signal = None
             if closed:
@@ -674,7 +760,7 @@ def run_crypto_paper(config: PatternScoutConfig, symbols: list[str], exchange: s
                      state_path: Optional[Path] = None,
                      on_event: Optional[Callable[[str], None]] = None,
                      feed=None, max_iterations: Optional[int] = None,
-                     sleep: bool = True) -> "PaperTrader":
+                     sleep: bool = True, minute_bars_by_symbol: Optional[dict] = None) -> "PaperTrader":
     """Paper-live on real crypto prices.
 
     Pulls public candlesticks (no exchange key needed) and fills orders with the
@@ -692,6 +778,12 @@ def run_crypto_paper(config: PatternScoutConfig, symbols: list[str], exchange: s
 
     log(f"Crypto paper-live | exchange={exchange} interval={interval} symbols={', '.join(symbols)} "
         f"| starting equity {broker.starting_equity:.2f}")
+    # Provide 1-minute candles (if any) for precise intrabar stop/target sequencing.
+    for sym in symbols:
+        mb = (minute_bars_by_symbol or {}).get(sym)
+        if mb:
+            trader.engines[sym].set_minute_bars(mb)
+
     # Warm up history so ATR + opening range context is ready before the first live bar.
     for sym in symbols:
         try:
@@ -754,12 +846,23 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         except Exception:
             cumulative = {"trades": {}}
 
+    # Shared feed (used both for the strategy and to pull 1-minute chart candles).
+    if feed is None:
+        from .crypto import make_feed
+        feed = make_feed(exchange, interval)
+
     for sym in symbols:
+        # 1-minute candles (last 2 days) so stop/target are sequenced precisely intrabar.
+        minute_bars = {}
+        try:
+            minute_bars[sym] = feed.history(sym, "1m", days=2)
+        except Exception as exc:  # pragma: no cover - network
+            log(f"[{sym}] 1m history error: {exc}")
         # Warmup replays the lookback window and processes the latest session's bars;
         # the returned trader holds the resulting simulated trades for that window.
         trader = run_crypto_paper(config, [sym], exchange=exchange, interval=interval,
                                   warmup_days=lookback_days, feed=feed, max_iterations=1,
-                                  sleep=False, on_event=log)
+                                  sleep=False, on_event=log, minute_bars_by_symbol=minute_bars)
         for t in trader.broker.trades:
             cumulative["trades"][f"{sym}:{t.session}:{t.signal_type}"] = t.to_dict()
         # Mark any still-open position to the latest price for a live unrealized PnL.
@@ -794,7 +897,22 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
     cpath.parent.mkdir(parents=True, exist_ok=True)
     cpath.write_text(json.dumps(cumulative, indent=2), encoding="utf-8")
 
-    _write_cumulative_reports(out, closed, open_positions, equity_val, unrealized, config)
+    # 1-minute candles for the chart (primary symbol).
+    chart_symbol = symbols[0] if symbols else None
+    chart_candles = []
+    if chart_symbol is not None:
+        try:
+            raw = feed.get_klines(chart_symbol, "1m", limit=300)
+            chart_candles = [
+                {"time": int(b["timestamp"].value // 1_000_000_000),  # epoch seconds (UTC)
+                 "open": b["open"], "high": b["high"], "low": b["low"], "close": b["close"]}
+                for b in raw
+            ]
+        except Exception as exc:  # pragma: no cover - network
+            log(f"[{chart_symbol}] 1m chart fetch error: {exc}")
+
+    _write_cumulative_reports(out, closed, open_positions, equity_val, unrealized, config,
+                              chart_symbol=chart_symbol, chart_candles=chart_candles)
     log(f"CI pass complete. Closed: {len(closed)} | open: {len(open_positions)} | "
         f"equity {equity_val:.2f} (incl. unrealized {equity_val + unrealized:.2f})")
     return cumulative
@@ -802,7 +920,9 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
 
 def _write_cumulative_reports(out: Path, closed: list, open_positions: list,
                               equity_val: float, unrealized: float,
-                              config: PatternScoutConfig) -> None:
+                              config: PatternScoutConfig,
+                              chart_symbol: Optional[str] = None,
+                              chart_candles: Optional[list] = None) -> None:
     rows = closed
     pd.DataFrame(rows).to_csv(out / "trades.csv", index=False)
     equity = pd.DataFrame()
@@ -838,6 +958,8 @@ def _write_cumulative_reports(out: Path, closed: list, open_positions: list,
         closed=rows,
         open_positions=open_positions,
         summary=summary,
+        chart_symbol=chart_symbol,
+        chart_candles=chart_candles or [],
     )
     # GitHub Pages serves index.html at the site root.
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")

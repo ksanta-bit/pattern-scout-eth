@@ -39,6 +39,23 @@ class DailyContextConfig:
 
 
 @dataclass
+class ExitManagementConfig:
+    # "fixed" = video (stop alla wick, target sul lato opposto dell'opening range).
+    # "trailing" = stop iniziale morbido -> break-even -> trailing, target lasciato correre.
+    mode: str = "fixed"
+    # Allarga lo stop oltre la wick di k*ATR daily, così l'entrata non fallisce sul rumore.
+    initial_stop_atr_fraction: float = 0.0
+    # A +N*R sposta lo stop a break-even (entrata), eliminando il rischio iniziale.
+    breakeven_trigger_r: float = 1.0
+    # Da +N*R inizia il trailing.
+    trail_trigger_r: float = 1.0
+    # Distanza del trailing = k*ATR daily sotto il massimo (long) / sopra il minimo (short).
+    trail_atr_fraction: float = 0.5
+    # Se true tiene anche un target fisso (lato opposto opening range); se false lascia correre.
+    use_fixed_target: bool = True
+
+
+@dataclass
 class ExecutionConfig:
     entry_slippage_pct: float = 0.0
     exit_slippage_pct: float = 0.0
@@ -87,6 +104,7 @@ class PatternScoutConfig:
     power_tower: PowerTowerConfig = field(default_factory=PowerTowerConfig)
     daily_context: DailyContextConfig = field(default_factory=DailyContextConfig)
     execution: ExecutionConfig = field(default_factory=ExecutionConfig)
+    exit_management: ExitManagementConfig = field(default_factory=ExitManagementConfig)
     risk: RiskConfig = field(default_factory=RiskConfig)
 
     @property
@@ -122,6 +140,8 @@ def _build_dataclass(cls: type, raw: dict[str, Any]):
             kwargs[f.name] = _build_dataclass(DailyContextConfig, value)
         elif isinstance(default, ExecutionConfig):
             kwargs[f.name] = _build_dataclass(ExecutionConfig, value)
+        elif isinstance(default, ExitManagementConfig):
+            kwargs[f.name] = _build_dataclass(ExitManagementConfig, value)
         elif isinstance(default, RiskConfig):
             kwargs[f.name] = _build_dataclass(RiskConfig, value)
         elif is_dataclass(target_type) and isinstance(value, dict):

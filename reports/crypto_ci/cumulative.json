@@ -1,25 +1,7 @@
 {
-  "trades": {
-    "ETHUSDT:2025-06-27:john_wick": {
-      "symbol": "ETHUSDT",
-      "session": "2025-06-27",
-      "side": "long",
-      "signal_type": "john_wick",
-      "signal_time": "2025-06-27T00:15:00+00:00",
-      "entry_time": "2025-06-27T00:20:00+00:00",
-      "exit_time": "2025-06-27T00:30:00+00:00",
-      "entry_price": 2955.31692,
-      "exit_price": 3018.33008,
-      "stop_price": 2921.7933120000002,
-      "target_price": 3019.84,
-      "quantity": 5.965944954373652,
-      "pnl": 375.93304396113945,
-      "r_multiple": 1.8796652198056973,
-      "exit_reason": "target",
-      "atr_fraction": 1.6037737781121442,
-      "status": "closed"
-    }
-  },
-  "equity": 10375.93304396114,
-  "updated": "2026-07-15T23:38:38"
+  "trades": {},
+  "open": {},
+  "starting_capital": 100.0,
+  "equity": 100.0,
+  "equity_incl_unrealized": 100.0
 }

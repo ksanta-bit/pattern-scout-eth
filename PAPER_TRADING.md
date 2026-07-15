@@ -69,6 +69,23 @@ PYTHONPATH=src python3 -m pattern_scout.cli paper-replay \
 | `execution.maker_fee_pct` | 0.0002 | fee maker Bitget (0,02%) |
 | `daily_context.enabled` | false | filtro "breakout+retest" del video (solo esempio live). Attivalo per meno trade ma più selettivi |
 
+### Gestione uscita: stop morbido → break-even → trailing → TP libero
+
+Nel config crypto la sezione `exit_management` è in modalità `trailing`:
+
+| Campo | Valore | Significato |
+|---|---|---|
+| `mode` | `trailing` | gestione dinamica (metti `fixed` per lo stop/target del video) |
+| `initial_stop_atr_fraction` | 0.25 | stop iniziale **morbido**: allargato di 0,25×ATR oltre la wick, così l'entrata non fallisce sul rumore |
+| `breakeven_trigger_r` | 1.0 | a **+1R** lo stop va a break-even (entrata): rischio azzerato |
+| `trail_trigger_r` | 1.0 | da +1R parte il **trailing** |
+| `trail_atr_fraction` | 0.6 | il trailing segue a 0,6×ATR sotto il massimo (long) / sopra il minimo (short) |
+| `use_fixed_target` | false | **nessun target fisso**: il take profit è lasciato correre, si esce sul trailing (o a fine sessione) |
+
+In pratica: entri, lo stop è largo per non essere buttato fuori subito; appena il trade va +1R lo
+stop sale a pareggio (non rischi più nulla); poi lo stop insegue il prezzo per bloccare il profitto
+e lasciare correre i movimenti forti. Il grafico mostra la linea di stop **attuale** (già spostata).
+
 ### Come viene calcolato il PnL netto per operazione
 
 ```
