@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pattern Scout Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: Canvas;
+      --fg: CanvasText;
+      --muted: color-mix(in srgb, CanvasText 62%, Canvas 38%);
+      --card: color-mix(in srgb, Canvas 94%, CanvasText 6%);
+      --border: color-mix(in srgb, CanvasText 18%, Canvas 82%);
+      --accent: #0a7cff;
+      --good: #0a8f55;
+      --bad: #c23b32;
+      --warn: #b77900;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.35;
+    }
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      padding: 14px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .value {
+      margin-top: 6px;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .value.good { color: var(--good); }
+    .value.bad { color: var(--bad); }
+    .section {
+      margin-top: 16px;
+    }
+    .notice {
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--warn) 12%, var(--card) 88%);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      color: var(--fg);
+      font-size: 14px;
+    }
+    .notice.is-visible {
+      display: block;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .chart-wrap {
+      height: 280px;
+      padding: 10px;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .axis, .grid-line {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    .line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .zero {
+      stroke: var(--muted);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      text-align: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: color-mix(in srgb, var(--card) 80%, var(--bg) 20%);
+    }
+    tr:last-child td { border-bottom: 0; }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+    .pill.target { color: var(--good); }
+    .pill.stop { color: var(--bad); }
+    .pill.session_close { color: var(--warn); }
+    .split {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .mini-list {
+      display: grid;
+      gap: 8px;
+    }
+    .mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      font-size: 13px;
+    }
+    .mini-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    @media (max-width: 760px) {
+      main { width: min(100% - 20px, 1180px); padding-top: 16px; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .split { grid-template-columns: 1fr; }
+      .value { font-size: 22px; }
+    }
+    @media (max-width: 460px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Pattern Scout Dashboard</h1>
+        <div class="subtitle" id="subtitle">Report backtest</div>
+      </div>
+    </header>
+
+    <section class="notice" id="demoNotice">
+      Stai guardando la demo sintetica. Serve solo a verificare che bot, report e dashboard funzionino; non misura la strategia su dati reali.
+    </section>
+
+    <section class="grid" aria-label="metriche principali">
+      <div class="card"><div class="label">Trade</div><div class="value" id="totalTrades">0</div></div>
+      <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div></div>
+      <div class="card"><div class="label">PnL totale</div><div class="value" id="totalPnl">0</div></div>
+      <div class="card"><div class="label">Avg R</div><div class="value" id="avgR">0</div></div>
+    </section>
+
+    <section class="split">
+      <div class="section card chart-wrap">
+        <h2>Equity curve</h2>
+        <svg id="equityChart" role="img" aria-label="equity curve"></svg>
+      </div>
+      <div class="section card">
+        <h2>Diagnostica setup</h2>
+        <div class="mini-list" id="diagnostics"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Trade</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sessione</th>
+              <th>Lato</th>
+              <th>Segnale</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>R</th>
+              <th>PnL</th>
+              <th>Uscita</th>
+              <th>Contesto daily</th>
+            </tr>
+          </thead>
+          <tbody id="tradeRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script id="payload" type="application/json">{"meta": {"reports_dir": "reports/_verify", "is_demo": false}, "summary": {"total_trades": 1, "wins": 1, "losses": 0, "win_rate": 1.0, "total_pnl": 135.8974358974, "avg_pnl": 135.8974358974, "avg_r": 1.358974359, "profit_factor": null, "max_drawdown": 0.0, "by_signal": {"john_wick": {"count": 1, "sum": 135.8974358974, "mean": 135.8974358974}}}, "trades": [{"session": "2025-01-03", "side": "long", "signal_type": "john_wick", "signal_time": "2025-01-03T09:40:00-05:00", "entry_time": "2025-01-03T09:45:00-05:00", "exit_time": "2025-01-03T09:55:00-05:00", "entry_price": 94.9, "exit_price": 100.2, "stop_price": 91.0, "target_price": 100.2, "quantity": 25.641025641025603, "pnl": 135.89743589743563, "r_multiple": 1.3589743589743564, "exit_reason": "target", "atr_fraction": 1.8400000000000003, "opening_high": 100.2, "opening_low": 91.0, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support", "daily_context_distance_atr": 0.0, "notes": "Break of John Wick extreme after opening manipulation and daily retest context."}], "equity": [{"exit_time": "2025-01-03T09:55:00-05:00", "pnl": 135.89743589743563, "equity": 135.89743589743563}], "annotated": [{"timestamp": "2025-01-02 09:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 09:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 09:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 09:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 09:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 09:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 10:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 11:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 12:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 13:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 14:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:00:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:05:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:10:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:15:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:20:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:25:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:30:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:35:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:40:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:45:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:50:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-02 15:55:00-05:00", "open": 91.0, "high": 101.0, "low": 90.5, "close": 100.0, "session": "2025-01-02", "opening_high": 101.0, "opening_low": 90.5, "atr_fraction": 3.5, "is_manipulation_session": true, "daily_context_valid": false, "daily_context_level": null, "daily_context_kind": null}, {"timestamp": "2025-01-03 09:30:00-05:00", "open": 100.0, "high": 100.2, "low": 96.8, "close": 97.0, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 09:35:00-05:00", "open": 97.0, "high": 97.2, "low": 94.0, "close": 94.2, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 09:40:00-05:00", "open": 94.2, "high": 94.9, "low": 91.0, "close": 94.6, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 09:45:00-05:00", "open": 94.6, "high": 96.0, "low": 94.5, "close": 95.5, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 09:50:00-05:00", "open": 95.5, "high": 98.0, "low": 95.0, "close": 97.8, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 09:55:00-05:00", "open": 97.8, "high": 100.5, "low": 97.5, "close": 100.2, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:00:00-05:00", "open": 100.2, "high": 101.0, "low": 99.8, "close": 100.6, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:05:00-05:00", "open": 100.6, "high": 100.8, "low": 100.0, "close": 100.1, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:10:00-05:00", "open": 100.08000000000004, "high": 100.48000000000005, "low": 99.68000000000004, "close": 100.13000000000004, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:15:00-05:00", "open": 100.09000000000005, "high": 100.49000000000004, "low": 99.69000000000004, "close": 100.14000000000004, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:20:00-05:00", "open": 100.10000000000004, "high": 100.50000000000006, "low": 99.70000000000005, "close": 100.15000000000003, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:25:00-05:00", "open": 100.11000000000006, "high": 100.51000000000006, "low": 99.71000000000004, "close": 100.16000000000004, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:30:00-05:00", "open": 100.12000000000006, "high": 100.52000000000008, "low": 99.72000000000006, "close": 100.17000000000006, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:35:00-05:00", "open": 100.13000000000008, "high": 100.53000000000009, "low": 99.73000000000006, "close": 100.18000000000006, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:40:00-05:00", "open": 100.14000000000009, "high": 100.54000000000008, "low": 99.74000000000008, "close": 100.19000000000008, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:45:00-05:00", "open": 100.15000000000008, "high": 100.55000000000008, "low": 99.75000000000009, "close": 100.20000000000007, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:50:00-05:00", "open": 100.16000000000008, "high": 100.56000000000007, "low": 99.76000000000008, "close": 100.21000000000008, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 10:55:00-05:00", "open": 100.17000000000009, "high": 100.57000000000008, "low": 99.77000000000008, "close": 100.22000000000008, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:00:00-05:00", "open": 100.18000000000008, "high": 100.5800000000001, "low": 99.78000000000009, "close": 100.23000000000008, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:05:00-05:00", "open": 100.1900000000001, "high": 100.5900000000001, "low": 99.79000000000008, "close": 100.2400000000001, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:10:00-05:00", "open": 100.2000000000001, "high": 100.60000000000012, "low": 99.8000000000001, "close": 100.2500000000001, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:15:00-05:00", "open": 100.21000000000012, "high": 100.61000000000011, "low": 99.8100000000001, "close": 100.2600000000001, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:20:00-05:00", "open": 100.22000000000013, "high": 100.62000000000012, "low": 99.8200000000001, "close": 100.27000000000012, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:25:00-05:00", "open": 100.23000000000012, "high": 100.63000000000012, "low": 99.83000000000013, "close": 100.28000000000011, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:30:00-05:00", "open": 100.24000000000012, "high": 100.64000000000011, "low": 99.84000000000012, "close": 100.29000000000012, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:35:00-05:00", "open": 100.25000000000011, "high": 100.65000000000012, "low": 99.85000000000012, "close": 100.30000000000013, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:40:00-05:00", "open": 100.26000000000012, "high": 100.66000000000014, "low": 99.86000000000011, "close": 100.31000000000012, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:45:00-05:00", "open": 100.27000000000014, "high": 100.67000000000014, "low": 99.87000000000012, "close": 100.32000000000014, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:50:00-05:00", "open": 100.28000000000014, "high": 100.68000000000016, "low": 99.88000000000014, "close": 100.33000000000014, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 11:55:00-05:00", "open": 100.29000000000016, "high": 100.69000000000015, "low": 99.89000000000014, "close": 100.34000000000016, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:00:00-05:00", "open": 100.30000000000015, "high": 100.70000000000016, "low": 99.90000000000016, "close": 100.35000000000016, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:05:00-05:00", "open": 100.31000000000016, "high": 100.71000000000016, "low": 99.91000000000015, "close": 100.36000000000016, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:10:00-05:00", "open": 100.32000000000016, "high": 100.72000000000016, "low": 99.92000000000016, "close": 100.37000000000016, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:15:00-05:00", "open": 100.33000000000015, "high": 100.73000000000016, "low": 99.93000000000016, "close": 100.38000000000017, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:20:00-05:00", "open": 100.34000000000016, "high": 100.74000000000018, "low": 99.94000000000015, "close": 100.39000000000016, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:25:00-05:00", "open": 100.35000000000018, "high": 100.75000000000018, "low": 99.95000000000016, "close": 100.40000000000018, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:30:00-05:00", "open": 100.36000000000018, "high": 100.7600000000002, "low": 99.96000000000018, "close": 100.41000000000018, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:35:00-05:00", "open": 100.3700000000002, "high": 100.7700000000002, "low": 99.97000000000018, "close": 100.4200000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:40:00-05:00", "open": 100.3800000000002, "high": 100.7800000000002, "low": 99.9800000000002, "close": 100.4300000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:45:00-05:00", "open": 100.3900000000002, "high": 100.7900000000002, "low": 99.9900000000002, "close": 100.4400000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:50:00-05:00", "open": 100.4000000000002, "high": 100.8000000000002, "low": 100.0000000000002, "close": 100.4500000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 12:55:00-05:00", "open": 100.4100000000002, "high": 100.81000000000022, "low": 100.0100000000002, "close": 100.4600000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:00:00-05:00", "open": 100.4200000000002, "high": 100.82000000000022, "low": 100.0200000000002, "close": 100.4700000000002, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:05:00-05:00", "open": 100.43000000000022, "high": 100.83000000000024, "low": 100.0300000000002, "close": 100.48000000000022, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:10:00-05:00", "open": 100.44000000000024, "high": 100.84000000000024, "low": 100.04000000000022, "close": 100.49000000000022, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:15:00-05:00", "open": 100.45000000000024, "high": 100.85000000000024, "low": 100.05000000000022, "close": 100.50000000000024, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:20:00-05:00", "open": 100.46000000000024, "high": 100.86000000000024, "low": 100.06000000000024, "close": 100.51000000000025, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:25:00-05:00", "open": 100.47000000000024, "high": 100.87000000000025, "low": 100.07000000000023, "close": 100.52000000000024, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:30:00-05:00", "open": 100.48000000000025, "high": 100.88000000000024, "low": 100.08000000000024, "close": 100.53000000000024, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:35:00-05:00", "open": 100.49000000000024, "high": 100.89000000000026, "low": 100.09000000000024, "close": 100.54000000000023, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:40:00-05:00", "open": 100.50000000000026, "high": 100.90000000000026, "low": 100.10000000000024, "close": 100.55000000000024, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:45:00-05:00", "open": 100.51000000000026, "high": 100.91000000000028, "low": 100.11000000000026, "close": 100.56000000000026, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:50:00-05:00", "open": 100.52000000000028, "high": 100.92000000000029, "low": 100.12000000000026, "close": 100.57000000000026, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 13:55:00-05:00", "open": 100.53000000000029, "high": 100.93000000000028, "low": 100.13000000000028, "close": 100.58000000000028, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:00:00-05:00", "open": 100.54000000000028, "high": 100.94000000000028, "low": 100.14000000000028, "close": 100.59000000000027, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:05:00-05:00", "open": 100.55000000000028, "high": 100.95000000000029, "low": 100.15000000000028, "close": 100.60000000000028, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:10:00-05:00", "open": 100.56000000000029, "high": 100.96000000000028, "low": 100.16000000000028, "close": 100.61000000000028, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:15:00-05:00", "open": 100.57000000000028, "high": 100.9700000000003, "low": 100.17000000000029, "close": 100.62000000000027, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:20:00-05:00", "open": 100.5800000000003, "high": 100.9800000000003, "low": 100.18000000000028, "close": 100.6300000000003, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:25:00-05:00", "open": 100.5900000000003, "high": 100.99000000000032, "low": 100.1900000000003, "close": 100.6400000000003, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:30:00-05:00", "open": 100.6000000000003, "high": 101.00000000000033, "low": 100.2000000000003, "close": 100.6500000000003, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:35:00-05:00", "open": 100.61000000000033, "high": 101.01000000000032, "low": 100.2100000000003, "close": 100.66000000000032, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:40:00-05:00", "open": 100.62000000000032, "high": 101.02000000000032, "low": 100.22000000000033, "close": 100.67000000000031, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:45:00-05:00", "open": 100.63000000000032, "high": 101.03000000000031, "low": 100.23000000000032, "close": 100.68000000000032, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:50:00-05:00", "open": 100.64000000000031, "high": 101.04000000000032, "low": 100.24000000000032, "close": 100.69000000000032, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 14:55:00-05:00", "open": 100.65000000000032, "high": 101.05000000000034, "low": 100.25000000000033, "close": 100.70000000000032, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:00:00-05:00", "open": 100.66000000000034, "high": 101.06000000000034, "low": 100.26000000000032, "close": 100.71000000000032, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:05:00-05:00", "open": 100.67000000000034, "high": 101.07000000000036, "low": 100.27000000000034, "close": 100.72000000000034, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:10:00-05:00", "open": 100.68000000000036, "high": 101.08000000000035, "low": 100.28000000000034, "close": 100.73000000000036, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:15:00-05:00", "open": 100.69000000000035, "high": 101.09000000000036, "low": 100.29000000000036, "close": 100.74000000000036, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:20:00-05:00", "open": 100.70000000000036, "high": 101.10000000000036, "low": 100.30000000000037, "close": 100.75000000000036, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:25:00-05:00", "open": 100.71000000000036, "high": 101.11000000000035, "low": 100.31000000000036, "close": 100.76000000000036, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:30:00-05:00", "open": 100.72000000000035, "high": 101.12000000000036, "low": 100.32000000000036, "close": 100.77000000000037, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:35:00-05:00", "open": 100.73000000000036, "high": 101.13000000000038, "low": 100.33000000000035, "close": 100.78000000000036, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:40:00-05:00", "open": 100.74000000000038, "high": 101.14000000000038, "low": 100.34000000000036, "close": 100.79000000000038, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:45:00-05:00", "open": 100.75000000000038, "high": 101.1500000000004, "low": 100.35000000000038, "close": 100.80000000000038, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:50:00-05:00", "open": 100.7600000000004, "high": 101.1600000000004, "low": 100.36000000000038, "close": 100.8100000000004, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}, {"timestamp": "2025-01-03 15:55:00-05:00", "open": 100.7700000000004, "high": 101.1700000000004, "low": 100.3700000000004, "close": 100.8200000000004, "session": "2025-01-03", "opening_high": 100.2, "opening_low": 91.0, "atr_fraction": 1.8400000000000003, "is_manipulation_session": true, "daily_context_valid": true, "daily_context_level": 91.0, "daily_context_kind": "breakout_retest_support"}]}</script>
+  <script>
+    const payload = JSON.parse(document.getElementById('payload').textContent);
+    const summary = payload.summary || {};
+    const trades = payload.trades || [];
+    const equity = payload.equity || [];
+    const annotated = payload.annotated || [];
+    const meta = payload.meta || {};
+
+    const fmt = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
+    const money = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+    const pct = (v) => `${fmt.format((Number(v) || 0) * 100)}%`;
+    const num = (v) => fmt.format(Number(v) || 0);
+
+    document.getElementById('totalTrades').textContent = summary.total_trades ?? trades.length;
+    document.getElementById('winRate').textContent = pct(summary.win_rate);
+    document.getElementById('totalPnl').textContent = money.format(Number(summary.total_pnl) || 0);
+    document.getElementById('avgR').textContent = num(summary.avg_r);
+    document.getElementById('totalPnl').classList.toggle('good', Number(summary.total_pnl) > 0);
+    document.getElementById('totalPnl').classList.toggle('bad', Number(summary.total_pnl) < 0);
+    document.getElementById('subtitle').textContent = meta.reports_dir ? `Report: ${meta.reports_dir}` : 'Report backtest';
+    document.getElementById('demoNotice').classList.toggle('is-visible', Boolean(meta.is_demo));
+
+    const sessions = new Set(trades.map(t => t.session));
+    const contextKinds = new Set(trades.map(t => t.daily_context_kind).filter(Boolean));
+    const manipulationSessions = new Set(
+      annotated
+        .filter(r => String(r.is_manipulation_session).toLowerCase() === 'true')
+        .map(r => r.session)
+        .filter(Boolean)
+    );
+    const dailyContextSessions = new Set(
+      annotated
+        .filter(r => String(r.daily_context_valid).toLowerCase() === 'true')
+        .map(r => r.session)
+        .filter(Boolean)
+    );
+    const exits = trades.reduce((acc, t) => {
+      const key = t.exit_reason || 'unknown';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const diagnostics = [
+      ['Sessioni tradate', sessions.size],
+      ['Pattern daily', contextKinds.size ? Array.from(contextKinds).join(', ') : 'nessuno'],
+      ['Sessioni manipulation', manipulationSessions.size],
+      ['Sessioni con contesto daily', dailyContextSessions.size],
+      ['Exit target', exits.target || 0],
+      ['Exit stop', exits.stop || 0],
+    ];
+    document.getElementById('diagnostics').innerHTML = diagnostics.map(([label, value]) =>
+      `<div class="mini-row"><span>${label}</span><strong>${value}</strong></div>`
+    ).join('');
+
+    const rows = trades.map(t => `
+      <tr>
+        <td>${t.session ?? ''}</td>
+        <td>${t.side ?? ''}</td>
+        <td>${t.signal_type ?? ''}</td>
+        <td>${money.format(Number(t.entry_price) || 0)}</td>
+        <td>${money.format(Number(t.exit_price) || 0)}</td>
+        <td>${num(t.r_multiple)}</td>
+        <td>${money.format(Number(t.pnl) || 0)}</td>
+        <td><span class="pill ${t.exit_reason ?? ''}">${t.exit_reason ?? ''}</span></td>
+        <td>${t.daily_context_kind ? `${t.daily_context_kind} @ ${num(t.daily_context_level)}` : ''}</td>
+      </tr>
+    `).join('');
+    document.getElementById('tradeRows').innerHTML = rows || '<tr><td colspan="9" class="empty">Nessun trade nel report.</td></tr>';
+
+    function drawEquity() {
+      const svg = document.getElementById('equityChart');
+      svg.innerHTML = '';
+      const w = svg.clientWidth || 700;
+      const h = svg.clientHeight || 220;
+      const pad = { left: 48, right: 12, top: 18, bottom: 32 };
+      const values = equity.map((d, i) => ({ x: i, y: Number(d.equity ?? d.pnl ?? 0) })).filter(d => Number.isFinite(d.y));
+      if (!values.length) {
+        svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="currentColor">Nessuna equity curve disponibile</text>';
+        return;
+      }
+      const minY = Math.min(0, ...values.map(d => d.y));
+      const maxY = Math.max(0, ...values.map(d => d.y));
+      const spanY = maxY - minY || 1;
+      const xScale = (x) => values.length === 1
+        ? pad.left + (w - pad.left - pad.right) / 2
+        : pad.left + (x / Math.max(1, values.length - 1)) * (w - pad.left - pad.right);
+      const yScale = (y) => pad.top + (1 - ((y - minY) / spanY)) * (h - pad.top - pad.bottom);
+      const path = values.map((d, i) => `${i ? 'L' : 'M'}${xScale(d.x).toFixed(1)},${yScale(d.y).toFixed(1)}`).join(' ');
+      const points = values.map(d => `<circle cx="${xScale(d.x).toFixed(1)}" cy="${yScale(d.y).toFixed(1)}" r="4" fill="var(--accent)"></circle>`).join('');
+      const zeroY = yScale(0);
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.innerHTML = `
+        <line class="axis" x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}"></line>
+        <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}"></line>
+        <line class="zero" x1="${pad.left}" y1="${zeroY}" x2="${w - pad.right}" y2="${zeroY}"></line>
+        <path class="line" d="${path}"></path>
+        ${points}
+        <text x="${pad.left}" y="${pad.top + 2}" fill="currentColor" font-size="12">${money.format(maxY)}</text>
+        <text x="${pad.left}" y="${h - 8}" fill="currentColor" font-size="12">${money.format(minY)}</text>
+        <text x="${w - pad.right}" y="${h - 8}" text-anchor="end" fill="currentColor" font-size="12">${values.length} trade</text>
+      `;
+    }
+    drawEquity();
+    window.addEventListener('resize', drawEquity);
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "updated": "2026-07-15T23:17:30",
+  "starting_equity": 10000.0,
+  "equity": 10135.897435897436,
+  "open_positions": {},
+  "closed_trades": [
+    {
+      "symbol": "SAMPLE",
+      "session": "2025-01-03",
+      "side": "long",
+      "signal_type": "john_wick",
+      "signal_time": "2025-01-03T09:40:00-05:00",
+      "entry_time": "2025-01-03T09:45:00-05:00",
+      "exit_time": "2025-01-03T09:55:00-05:00",
+      "entry_price": 94.9,
+      "exit_price": 100.2,
+      "stop_price": 91.0,
+      "target_price": 100.2,
+      "quantity": 25.641025641025603,
+      "pnl": 135.89743589743563,
+      "r_multiple": 1.3589743589743564,
+      "exit_reason": "target",
+      "atr_fraction": 2.5760000000000005,
+      "status": "closed"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "timezone": "UTC",
+  "session_open": "00:00",
+  "session_close": "23:55",
+  "base_timeframe_minutes": 5,
+  "opening_minutes": 15,
+  "signal_cutoff_minutes": 60,
+  "trigger_cutoff_minutes": 90,
+  "atr_period": 14,
+  "atr_min_periods": 3,
+  "atr_method": "wilder",
+  "manipulation_threshold": 0.2,
+  "preferred_threshold": 0.7,
+  "opening_body_fraction_min": 0.55,
+  "allow_third_opening_bar_signal": true,
+  "max_trades_per_session": 1,
+  "john_wick": {
+    "enabled": true,
+    "lower_wick_to_body_min": 1.5,
+    "upper_wick_to_body_max": 1.0,
+    "close_location_min_long": 0.5,
+    "upper_wick_to_body_min": 1.5,
+    "lower_wick_to_body_max": 1.0,
+    "close_location_max_short": 0.5
+  },
+  "power_tower": {
+    "enabled": true,
+    "midpoint_fraction": 0.5,
+    "midpoint_basis": "range",
+    "previous_body_fraction_min": 0.6,
+    "previous_range_atr_fraction_min": 0.1
+  },
+  "daily_context": {
+    "enabled": false,
+    "lookback_sessions": 20,
+    "min_base_sessions": 3,
+    "breakout_recent_sessions": 5,
+    "breakout_buffer_atr_fraction": 0.0,
+    "retest_tolerance_atr_fraction": 0.15,
+    "retest_tolerance_pct": 0.003,
+    "require_breakout_close": true
+  },
+  "execution": {
+    "entry_slippage_pct": 0.0005,
+    "exit_slippage_pct": 0.0005,
+    "stop_buffer_pct": 0.0007,
+    "fee_per_share": 0.0,
+    "force_exit_at_session_close": true,
+    "taker_fee_pct": 0.0006,
+    "maker_fee_pct": 0.0002
+  },
+  "risk": {
+    "account_size": 100.0,
+    "risk_fraction": 0.02,
+    "fixed_quantity": null,
+    "point_value": 1.0,
+    "leverage": 20.0,
+    "sizing_mode": "risk",
+    "maintenance_margin_rate": 0.005
+  }
+}

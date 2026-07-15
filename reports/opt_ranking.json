@@ -1,0 +1,252 @@
+[
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.5,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.15
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.5,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.3
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.6,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.15
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.6,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.3
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.7,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.15
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.0,
+      "power_tower.previous_body_fraction_min": 0.7,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.3
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.5,
+      "power_tower.previous_body_fraction_min": 0.5,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.15
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.5,
+      "power_tower.previous_body_fraction_min": 0.5,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.3
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.5,
+      "power_tower.previous_body_fraction_min": 0.6,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.15
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  },
+  {
+    "params": {
+      "manipulation_threshold": 0.15,
+      "opening_body_fraction_min": 0.0,
+      "preferred_threshold": 0.7,
+      "john_wick.lower_wick_to_body_min": 1.5,
+      "power_tower.previous_body_fraction_min": 0.6,
+      "daily_context.enabled": false,
+      "daily_context.retest_tolerance_atr_fraction": 0.3
+    },
+    "summary": {
+      "total_trades": 15,
+      "wins": 2,
+      "losses": 13,
+      "win_rate": 0.13333333333333333,
+      "total_pnl": -1186.8055555555543,
+      "avg_r": -0.7912037037037029,
+      "profit_factor": 0.08707264957265051
+    },
+    "score": [
+      1,
+      0.08707264957265051,
+      -0.7912037037037029
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+.pattern_scout_state.json
+reports/dashboard_server.log

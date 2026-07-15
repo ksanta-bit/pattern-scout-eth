@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pattern Scout Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: Canvas;
+      --fg: CanvasText;
+      --muted: color-mix(in srgb, CanvasText 62%, Canvas 38%);
+      --card: color-mix(in srgb, Canvas 94%, CanvasText 6%);
+      --border: color-mix(in srgb, CanvasText 18%, Canvas 82%);
+      --accent: #0a7cff;
+      --good: #0a8f55;
+      --bad: #c23b32;
+      --warn: #b77900;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.35;
+    }
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      padding: 14px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .value {
+      margin-top: 6px;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .value.good { color: var(--good); }
+    .value.bad { color: var(--bad); }
+    .section {
+      margin-top: 16px;
+    }
+    .notice {
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--warn) 12%, var(--card) 88%);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      color: var(--fg);
+      font-size: 14px;
+    }
+    .notice.is-visible {
+      display: block;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .chart-wrap {
+      height: 280px;
+      padding: 10px;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .axis, .grid-line {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    .line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .zero {
+      stroke: var(--muted);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      text-align: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: color-mix(in srgb, var(--card) 80%, var(--bg) 20%);
+    }
+    tr:last-child td { border-bottom: 0; }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+    .pill.target { color: var(--good); }
+    .pill.stop { color: var(--bad); }
+    .pill.session_close { color: var(--warn); }
+    .split {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .mini-list {
+      display: grid;
+      gap: 8px;
+    }
+    .mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      font-size: 13px;
+    }
+    .mini-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    @media (max-width: 760px) {
+      main { width: min(100% - 20px, 1180px); padding-top: 16px; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .split { grid-template-columns: 1fr; }
+      .value { font-size: 22px; }
+    }
+    @media (max-width: 460px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Pattern Scout Dashboard</h1>
+        <div class="subtitle" id="subtitle">Report backtest</div>
+      </div>
+    </header>
+
+    <section class="notice" id="demoNotice">
+      Stai guardando la demo sintetica. Serve solo a verificare che bot, report e dashboard funzionino; non misura la strategia su dati reali.
+    </section>
+
+    <section class="grid" aria-label="metriche principali">
+      <div class="card"><div class="label">Trade</div><div class="value" id="totalTrades">0</div></div>
+      <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div></div>
+      <div class="card"><div class="label">PnL totale</div><div class="value" id="totalPnl">0</div></div>
+      <div class="card"><div class="label">Avg R</div><div class="value" id="avgR">0</div></div>
+    </section>
+
+    <section class="split">
+      <div class="section card chart-wrap">
+        <h2>Equity curve</h2>
+        <svg id="equityChart" role="img" aria-label="equity curve"></svg>
+      </div>
+      <div class="section card">
+        <h2>Diagnostica setup</h2>
+        <div class="mini-list" id="diagnostics"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Trade</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sessione</th>
+              <th>Lato</th>
+              <th>Segnale</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>R</th>
+              <th>PnL</th>
+              <th>Uscita</th>
+              <th>Contesto daily</th>
+            </tr>
+          </thead>
+          <tbody id="tradeRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script id="payload" type="application/json">{"meta": {"reports_dir": "reports/crypto_ci", "is_demo": false}, "summary": {"total_trades": 1, "wins": 1, "losses": 0, "win_rate": 1.0, "total_pnl": 375.9330439611, "avg_r": 1.8796652198, "profit_factor": null, "ending_equity": 10375.9330439611, "open_positions": 0}, "trades": [{"symbol": "ETHUSDT", "session": "2025-06-27", "side": "long", "signal_type": "john_wick", "signal_time": "2025-06-27T00:15:00+00:00", "entry_time": "2025-06-27T00:20:00+00:00", "exit_time": "2025-06-27T00:30:00+00:00", "entry_price": 2955.31692, "exit_price": 3018.33008, "stop_price": 2921.793312, "target_price": 3019.84, "quantity": 5.965944954373652, "pnl": 375.93304396113945, "r_multiple": 1.8796652198056971, "exit_reason": "target", "atr_fraction": 1.6037737781121442, "status": "closed"}], "equity": [{"exit_time": "2025-06-27T00:30:00+00:00", "pnl": 375.93304396113945, "equity": 10375.93304396114}], "annotated": []}</script>
+  <script>
+    const payload = JSON.parse(document.getElementById('payload').textContent);
+    const summary = payload.summary || {};
+    const trades = payload.trades || [];
+    const equity = payload.equity || [];
+    const annotated = payload.annotated || [];
+    const meta = payload.meta || {};
+
+    const fmt = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
+    const money = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+    const pct = (v) => `${fmt.format((Number(v) || 0) * 100)}%`;
+    const num = (v) => fmt.format(Number(v) || 0);
+
+    document.getElementById('totalTrades').textContent = summary.total_trades ?? trades.length;
+    document.getElementById('winRate').textContent = pct(summary.win_rate);
+    document.getElementById('totalPnl').textContent = money.format(Number(summary.total_pnl) || 0);
+    document.getElementById('avgR').textContent = num(summary.avg_r);
+    document.getElementById('totalPnl').classList.toggle('good', Number(summary.total_pnl) > 0);
+    document.getElementById('totalPnl').classList.toggle('bad', Number(summary.total_pnl) < 0);
+    document.getElementById('subtitle').textContent = meta.reports_dir ? `Report: ${meta.reports_dir}` : 'Report backtest';
+    document.getElementById('demoNotice').classList.toggle('is-visible', Boolean(meta.is_demo));
+
+    const sessions = new Set(trades.map(t => t.session));
+    const contextKinds = new Set(trades.map(t => t.daily_context_kind).filter(Boolean));
+    const manipulationSessions = new Set(
+      annotated
+        .filter(r => String(r.is_manipulation_session).toLowerCase() === 'true')
+        .map(r => r.session)
+        .filter(Boolean)
+    );
+    const dailyContextSessions = new Set(
+      annotated
+        .filter(r => String(r.daily_context_valid).toLowerCase() === 'true')
+        .map(r => r.session)
+        .filter(Boolean)
+    );
+    const exits = trades.reduce((acc, t) => {
+      const key = t.exit_reason || 'unknown';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const diagnostics = [
+      ['Sessioni tradate', sessions.size],
+      ['Pattern daily', contextKinds.size ? Array.from(contextKinds).join(', ') : 'nessuno'],
+      ['Sessioni manipulation', manipulationSessions.size],
+      ['Sessioni con contesto daily', dailyContextSessions.size],
+      ['Exit target', exits.target || 0],
+      ['Exit stop', exits.stop || 0],
+    ];
+    document.getElementById('diagnostics').innerHTML = diagnostics.map(([label, value]) =>
+      `<div class="mini-row"><span>${label}</span><strong>${value}</strong></div>`
+    ).join('');
+
+    const rows = trades.map(t => `
+      <tr>
+        <td>${t.session ?? ''}</td>
+        <td>${t.side ?? ''}</td>
+        <td>${t.signal_type ?? ''}</td>
+        <td>${money.format(Number(t.entry_price) || 0)}</td>
+        <td>${money.format(Number(t.exit_price) || 0)}</td>
+        <td>${num(t.r_multiple)}</td>
+        <td>${money.format(Number(t.pnl) || 0)}</td>
+        <td><span class="pill ${t.exit_reason ?? ''}">${t.exit_reason ?? ''}</span></td>
+        <td>${t.daily_context_kind ? `${t.daily_context_kind} @ ${num(t.daily_context_level)}` : ''}</td>
+      </tr>
+    `).join('');
+    document.getElementById('tradeRows').innerHTML = rows || '<tr><td colspan="9" class="empty">Nessun trade nel report.</td></tr>';
+
+    function drawEquity() {
+      const svg = document.getElementById('equityChart');
+      svg.innerHTML = '';
+      const w = svg.clientWidth || 700;
+      const h = svg.clientHeight || 220;
+      const pad = { left: 48, right: 12, top: 18, bottom: 32 };
+      const values = equity.map((d, i) => ({ x: i, y: Number(d.equity ?? d.pnl ?? 0) })).filter(d => Number.isFinite(d.y));
+      if (!values.length) {
+        svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="currentColor">Nessuna equity curve disponibile</text>';
+        return;
+      }
+      const minY = Math.min(0, ...values.map(d => d.y));
+      const maxY = Math.max(0, ...values.map(d => d.y));
+      const spanY = maxY - minY || 1;
+      const xScale = (x) => values.length === 1
+        ? pad.left + (w - pad.left - pad.right) / 2
+        : pad.left + (x / Math.max(1, values.length - 1)) * (w - pad.left - pad.right);
+      const yScale = (y) => pad.top + (1 - ((y - minY) / spanY)) * (h - pad.top - pad.bottom);
+      const path = values.map((d, i) => `${i ? 'L' : 'M'}${xScale(d.x).toFixed(1)},${yScale(d.y).toFixed(1)}`).join(' ');
+      const points = values.map(d => `<circle cx="${xScale(d.x).toFixed(1)}" cy="${yScale(d.y).toFixed(1)}" r="4" fill="var(--accent)"></circle>`).join('');
+      const zeroY = yScale(0);
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.innerHTML = `
+        <line class="axis" x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}"></line>
+        <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}"></line>
+        <line class="zero" x1="${pad.left}" y1="${zeroY}" x2="${w - pad.right}" y2="${zeroY}"></line>
+        <path class="line" d="${path}"></path>
+        ${points}
+        <text x="${pad.left}" y="${pad.top + 2}" fill="currentColor" font-size="12">${money.format(maxY)}</text>
+        <text x="${pad.left}" y="${h - 8}" fill="currentColor" font-size="12">${money.format(minY)}</text>
+        <text x="${w - pad.right}" y="${h - 8}" text-anchor="end" fill="currentColor" font-size="12">${values.length} trade</text>
+      `;
+    }
+    drawEquity();
+    window.addEventListener('resize', drawEquity);
+  </script>
+</body>
+</html>

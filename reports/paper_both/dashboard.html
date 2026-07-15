@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pattern Scout — Paper</title>
+<style>
+  :root{color-scheme:light dark;--bg:Canvas;--fg:CanvasText;
+    --muted:color-mix(in srgb,CanvasText 62%,Canvas 38%);
+    --card:color-mix(in srgb,Canvas 94%,CanvasText 6%);
+    --border:color-mix(in srgb,CanvasText 18%,Canvas 82%);
+    --accent:#0a7cff;--good:#0a8f55;--bad:#c23b32;--warn:#b77900;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.35}
+  main{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:24px 0 40px}
+  header{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  h1{margin:0;font-size:24px;font-weight:600}
+  .subtitle{margin-top:4px;color:var(--muted);font-size:14px}
+  .controls{display:flex;align-items:center;gap:10px;margin:6px 0 18px}
+  select{font-size:15px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);color:var(--fg)}
+  label.ctl{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  .card{border:1px solid var(--border);border-radius:8px;background:var(--card);padding:14px}
+  .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  .value{margin-top:6px;font-size:26px;font-weight:600}
+  .value.good{color:var(--good)}.value.bad{color:var(--bad)}
+  .split{display:grid;grid-template-columns:1.3fr .7fr;gap:12px;align-items:start}
+  .section{margin-top:16px}.section h2{margin:0 0 10px;font-size:16px;font-weight:600}
+  .chart-wrap{height:280px;padding:10px}
+  svg{display:block;width:100%;height:100%}
+  .axis{stroke:var(--border);stroke-width:1}.line{fill:none;stroke:var(--accent);stroke-width:2}
+  .zero{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+  .mini-list{display:grid;gap:8px}
+  .mini-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);
+    padding-bottom:8px;font-size:13px}.mini-row:last-child{border-bottom:0;padding-bottom:0}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+  table{width:100%;min-width:820px;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+  th{color:var(--muted);font-weight:600;background:color-mix(in srgb,var(--card) 80%,var(--bg) 20%)}
+  .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px}
+  .pill.target{color:var(--good)}.pill.stop{color:var(--bad)}.pill.session_close{color:var(--warn)}
+  .empty{color:var(--muted);padding:18px;text-align:center}
+  @media (max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>Pattern Scout — Paper</h1>
+    <div class="subtitle" id="subtitle"></div></div>
+  </header>
+  <div class="controls">
+    <label class="ctl" for="variant">Filtro daily</label>
+    <select id="variant"></select>
+    <span class="subtitle" id="variantHint"></span>
+  </div>
+  <section class="grid">
+    <div class="card"><div class="label">Trade</div><div class="value" id="totalTrades">0</div></div>
+    <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div></div>
+    <div class="card"><div class="label">PnL totale</div><div class="value" id="totalPnl">0</div></div>
+    <div class="card"><div class="label">Avg R</div><div class="value" id="avgR">0</div></div>
+  </section>
+  <section class="split">
+    <div class="section card chart-wrap"><h2>Equity curve</h2>
+      <svg id="equityChart" role="img" aria-label="equity"></svg></div>
+    <div class="section card"><h2>Metriche</h2><div class="mini-list" id="diagnostics"></div></div>
+  </section>
+  <section class="section"><h2>Trade</h2>
+    <div class="table-wrap"><table><thead><tr>
+      <th>Sessione</th><th>Simbolo</th><th>Lato</th><th>Segnale</th><th>Entry</th>
+      <th>Exit</th><th>R</th><th>PnL</th><th>Uscita</th></tr></thead>
+      <tbody id="tradeRows"></tbody></table></div>
+  </section>
+</main>
+<script id="payload" type="application/json">{"title": "Pattern Scout — Paper (filtro daily selezionabile)", "variants": [{"name": "Filtro daily OFF", "summary": {"symbols": ["SAMPLE"], "starting_equity": 10000.0, "ending_equity": 10463.8620151545, "total_trades": 2, "wins": 2, "losses": 0, "win_rate": 1.0, "total_pnl": 463.86201515450034, "profit_factor": null, "avg_r": 1.1467998964092763, "open_positions": 0}, "trades": [{"symbol": "SAMPLE", "session": "2025-01-02", "side": "short", "signal_type": "power_tower", "signal_time": "2025-01-02T09:40:00-05:00", "entry_time": "2025-01-02T09:40:00-05:00", "exit_time": "2025-01-02T09:40:00-05:00", "entry_price": 95.721275, "exit_price": 90.52714999999999, "stop_price": 101.0505, "target_price": 90.5, "quantity": 37.52890898770463, "pnl": 194.92984439576185, "r_multiple": 0.9746492219788092, "exit_reason": "target", "atr_fraction": 3.5, "status": "closed", "leverage": 1.0, "margin": 3592.315017662047, "liquidation_price": null, "notional": 3592.315017662047, "fees": 0.0, "gross_pnl": 194.92984439576185}, {"symbol": "SAMPLE", "session": "2025-01-03", "side": "long", "signal_type": "john_wick", "signal_time": "2025-01-03T09:40:00-05:00", "entry_time": "2025-01-03T09:45:00-05:00", "exit_time": "2025-01-03T09:55:00-05:00", "entry_price": 94.92847, "exit_price": 100.16994000000001, "stop_price": 90.95450000000001, "target_price": 100.2, "quantity": 51.30853954305532, "pnl": 268.9321707587385, "r_multiple": 1.3189505708397433, "exit_reason": "target", "atr_fraction": 2.5760000000000005, "status": "closed", "leverage": 1.0, "margin": 4870.641156756741, "liquidation_price": null, "notional": 4870.641156756741, "fees": 0.0, "gross_pnl": 268.9321707587385}], "equity": [{"exit_time": "2025-01-02T09:40:00-05:00", "pnl": 194.92984439576185, "equity": 194.92984439576185}, {"exit_time": "2025-01-03T09:55:00-05:00", "pnl": 268.9321707587385, "equity": 463.86201515450034}], "hint": "Nucleo del video (step 1-3)"}, {"name": "Filtro daily ON", "summary": {"symbols": ["SAMPLE"], "starting_equity": 10000.0, "ending_equity": 10263.790114167949, "total_trades": 1, "wins": 1, "losses": 0, "win_rate": 1.0, "total_pnl": 263.7901141679486, "profit_factor": null, "avg_r": 1.318950570839743, "open_positions": 0}, "trades": [{"symbol": "SAMPLE", "session": "2025-01-03", "side": "long", "signal_type": "john_wick", "signal_time": "2025-01-03T09:40:00-05:00", "entry_time": "2025-01-03T09:45:00-05:00", "exit_time": "2025-01-03T09:55:00-05:00", "entry_price": 94.92847, "exit_price": 100.16994000000001, "stop_price": 90.95450000000001, "target_price": 100.2, "quantity": 50.327506246901784, "pnl": 263.7901141679486, "r_multiple": 1.318950570839743, "exit_reason": "target", "atr_fraction": 2.5760000000000005, "status": "closed", "leverage": 1.0, "margin": 4777.513166933829, "liquidation_price": null, "notional": 4777.513166933829, "fees": 0.0, "gross_pnl": 263.7901141679486}], "equity": [{"exit_time": "2025-01-03T09:55:00-05:00", "pnl": 263.7901141679486, "equity": 263.7901141679486}], "hint": "Con breakout+retest daily (esempio live)"}]}</script>
+<script>
+  const payload=JSON.parse(document.getElementById('payload').textContent);
+  const variants=payload.variants||[];
+  document.getElementById('subtitle').textContent=payload.title||'';
+  const fmt=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2});
+  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
+  const pct=v=>`${fmt.format((Number(v)||0)*100)}%`;
+  const num=v=>fmt.format(Number(v)||0);
+  const sel=document.getElementById('variant');
+  variants.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name;sel.appendChild(o);});
+
+  function render(idx){
+    const v=variants[idx]||{};const s=v.summary||{};const trades=v.trades||[];const equity=v.equity||[];
+    document.getElementById('totalTrades').textContent=s.total_trades??trades.length;
+    document.getElementById('winRate').textContent=pct(s.win_rate);
+    const tp=document.getElementById('totalPnl');
+    tp.textContent=money.format(Number(s.total_pnl)||0);
+    tp.classList.toggle('good',Number(s.total_pnl)>0);tp.classList.toggle('bad',Number(s.total_pnl)<0);
+    document.getElementById('avgR').textContent=num(s.avg_r);
+    document.getElementById('variantHint').textContent=v.hint||'';
+    const exits=trades.reduce((a,t)=>{const k=t.exit_reason||'—';a[k]=(a[k]||0)+1;return a;},{});
+    const pf=s.profit_factor; const pfTxt=(pf===null||pf===undefined)?'—':(isFinite(pf)?num(pf):'∞');
+    const diag=[['Profit factor',pfTxt],['Wins',s.wins||0],['Losses',s.losses||0],
+      ['Exit target',exits.target||0],['Exit stop',exits.stop||0],
+      ['Exit fine sessione',exits.session_close||0]];
+    document.getElementById('diagnostics').innerHTML=diag.map(([l,x])=>
+      `<div class="mini-row"><span>${l}</span><strong>${x}</strong></div>`).join('');
+    const rows=trades.map(t=>`<tr>
+      <td>${t.session??''}</td><td>${t.symbol??''}</td><td>${t.side??''}</td>
+      <td>${t.signal_type??''}</td><td>${money.format(Number(t.entry_price)||0)}</td>
+      <td>${money.format(Number(t.exit_price)||0)}</td><td>${num(t.r_multiple)}</td>
+      <td>${money.format(Number(t.pnl)||0)}</td>
+      <td><span class="pill ${t.exit_reason??''}">${t.exit_reason??''}</span></td></tr>`).join('');
+    document.getElementById('tradeRows').innerHTML=rows||'<tr><td colspan="9" class="empty">Nessun trade.</td></tr>';
+    drawEquity(equity);
+  }
+  function drawEquity(equity){
+    const svg=document.getElementById('equityChart');svg.innerHTML='';
+    const w=svg.clientWidth||700,h=svg.clientHeight||220;
+    const pad={left:52,right:12,top:18,bottom:28};
+    const vals=equity.map((d,i)=>({x:i,y:Number(d.equity??d.pnl??0)})).filter(d=>Number.isFinite(d.y));
+    if(!vals.length){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="currentColor">Nessuna equity</text>';return;}
+    const minY=Math.min(0,...vals.map(d=>d.y)),maxY=Math.max(0,...vals.map(d=>d.y));const span=maxY-minY||1;
+    const xs=x=>vals.length===1?pad.left+(w-pad.left-pad.right)/2:pad.left+(x/(vals.length-1))*(w-pad.left-pad.right);
+    const ys=y=>pad.top+(1-((y-minY)/span))*(h-pad.top-pad.bottom);
+    const path=vals.map((d,i)=>`${i?'L':'M'}${xs(d.x).toFixed(1)},${ys(d.y).toFixed(1)}`).join(' ');
+    const pts=vals.map(d=>`<circle cx="${xs(d.x).toFixed(1)}" cy="${ys(d.y).toFixed(1)}" r="3.5" fill="var(--accent)"></circle>`).join('');
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+    svg.innerHTML=`<line class="axis" x1="${pad.left}" y1="${h-pad.bottom}" x2="${w-pad.right}" y2="${h-pad.bottom}"></line>
+      <line class="axis" x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h-pad.bottom}"></line>
+      <line class="zero" x1="${pad.left}" y1="${ys(0)}" x2="${w-pad.right}" y2="${ys(0)}"></line>
+      <path class="line" d="${path}"></path>${pts}
+      <text x="${pad.left}" y="${pad.top+2}" fill="currentColor" font-size="12">${money.format(maxY)}</text>
+      <text x="${pad.left}" y="${h-6}" fill="currentColor" font-size="12">${money.format(minY)}</text>`;
+  }
+  sel.addEventListener('change',()=>render(Number(sel.value)));
+  render(0);window.addEventListener('resize',()=>render(Number(sel.value)));
+</script>
+</body></html>
