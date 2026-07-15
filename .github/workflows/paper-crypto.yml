@@ -51,7 +51,7 @@ jobs:
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
             --symbols ETHUSDT \
-            --exchange binance \
+            --exchange binancevision \
             --config config.crypto.json \
             --lookback-days 4 \
             --out docs \

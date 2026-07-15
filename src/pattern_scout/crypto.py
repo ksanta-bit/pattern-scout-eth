@@ -31,6 +31,9 @@ import pandas as pd
 
 BINANCE_BASE = "https://api.binance.com"
 BINANCE_US_BASE = "https://api.binance.us"
+# Public data proxy: same /api/v3 klines, globally reachable (incl. US CI runners
+# where api.binance.com is geo-blocked with HTTP 451). Best choice for GitHub Actions.
+BINANCE_VISION_BASE = "https://data-api.binance.vision"
 BITGET_BASE = "https://api.bitget.com"
 
 # interval label -> milliseconds
@@ -184,6 +187,8 @@ def make_feed(exchange: str, interval: str = "5m") -> object:
         return BinanceDataFeed(interval)
     if ex in {"binanceus", "binance-us", "binance.us"}:
         return BinanceDataFeed(interval, base_url=BINANCE_US_BASE)
+    if ex in {"binancevision", "binance-vision", "vision"}:
+        return BinanceDataFeed(interval, base_url=BINANCE_VISION_BASE)
     if ex in {"bitget"}:
         return BitgetDataFeed(interval)
     raise ExchangeError(f"Unknown exchange '{exchange}'. Use binance, binanceus or bitget.")

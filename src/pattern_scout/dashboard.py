@@ -624,12 +624,12 @@ def _render_crypto(payload: dict) -> str:
 
  // ---- Candlestick chart (1 minute) with entry / stop / target lines ----
  (function(){
-   const candles=(p.candles||[]);
+   let candles=(p.candles||[]);
    const sym=p.chart_symbol||'ETHUSDT';
    const el=document.getElementById('chart');
    document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym;
-   if(!window.LightweightCharts||!candles.length){
-     el.innerHTML='<div class="empty" style="padding:40px">Grafico non disponibile (in attesa di candele dal prossimo aggiornamento).</div>';
+   if(!window.LightweightCharts){
+     el.innerHTML='<div class="empty" style="padding:40px">Libreria grafico non caricata (riprova con la rete attiva).</div>';
      return;
    }
    const dark=matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
@@ -645,7 +645,9 @@ def _render_crypto(payload: dict) -> str:
      upColor:'#26a65b',downColor:'#e5393b',borderVisible:false,
      wickUpColor:'#26a65b',wickDownColor:'#e5393b',
    });
-   series.setData(candles);
+   let seeded=candles.length>0;
+   if(seeded)series.setData(candles);
+   else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico le candele…</div>');
    // Active positions: entry / stop / target lines + entry marker + side.
    const markers=[];
    opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
@@ -678,18 +680,24 @@ def _render_crypto(payload: dict) -> str:
    // ---- Live update: refresh 1-minute candles from Binance every 60s ----
    // The GitHub workflow refreshes positions every ~5 min, but the price chart
    // stays live minute-by-minute directly in the browser.
-   const hosts=['https://api.binance.com','https://api.binance.us','https://data-api.binance.vision'];
+   const hosts=['https://data-api.binance.vision','https://api.binance.com','https://api.binance.us'];
    let lastTime=candles.length?candles[candles.length-1].time:0;
    async function tick(){
+     const limit=seeded?3:300;               // seed the whole chart if we started empty
      for(const h of hosts){
        try{
-         const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=3`,{cache:'no-store'});
+         const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=${limit}`,{cache:'no-store'});
          if(!r.ok)continue;
          const arr=await r.json();
-         arr.forEach(k=>{
-           const bar={time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]};
-           if(bar.time>=lastTime){series.update(bar);lastTime=bar.time;}
-         });
+         const bars=arr.map(k=>({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
+         if(!seeded){
+           series.setData(bars); seeded=true;
+           if(bars.length)lastTime=bars[bars.length-1].time;
+           const w=document.getElementById('chartWait'); if(w)w.remove();
+           chart.timeScale().fitContent();
+         }else{
+           bars.forEach(b=>{ if(b.time>=lastTime){series.update(b);lastTime=b.time;} });
+         }
          const last=arr[arr.length-1];
          if(last){
            document.getElementById('updated').textContent=
