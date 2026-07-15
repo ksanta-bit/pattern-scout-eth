@@ -35,8 +35,17 @@
  .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;
   animation:pulse 1.6s infinite}
  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
- @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
-</style></head><body><main>
+ #chart{width:100%;height:420px;border:1px solid var(--border);border-radius:10px;position:relative}
+ .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 2px 0}
+ .legend b{color:var(--fg)}
+ .dot{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
+ .side-tag{font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px}
+ .side-tag.long{background:color-mix(in srgb,var(--good) 22%,var(--card));color:var(--good)}
+ .side-tag.short{background:color-mix(in srgb,var(--bad) 22%,var(--card));color:var(--bad)}
+ @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}#chart{height:320px}}
+</style>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+</head><body><main>
  <header>
    <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1></div>
    <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
@@ -48,6 +57,13 @@
    <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
    <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
  </section>
+ <h2 id="chartTitle">Grafico 1 minuto</h2>
+ <div id="chart"></div>
+ <div class="legend" id="legend">
+   <span><span class="dot" style="background:#2962ff"></span>Entry</span>
+   <span><span class="dot" style="background:#e5393b"></span>Stop loss</span>
+   <span><span class="dot" style="background:#26a65b"></span>Take profit</span>
+ </div>
  <h2>Operazioni aperte <span class="sub" id="openCount"></span></h2>
  <div class="table-wrap"><table><thead><tr>
    <th>Simbolo</th><th>Lato</th><th>Entry</th><th>Prezzo ora</th><th>Qty</th><th>Leva</th>
@@ -64,7 +80,7 @@
    oppure lancia il workflow GitHub con l'opzione <code>reset</code>.
  </div>
 </main>
-<script id="payload" type="application/json">{"starting_capital": 100.0, "equity": 475.93304396113945, "unrealized": 0, "equity_incl_unrealized": 475.93304396113945, "closed": [{"symbol": "ETHUSDT", "session": "2025-06-27", "side": "long", "signal_type": "john_wick", "signal_time": "2025-06-27T00:15:00+00:00", "entry_time": "2025-06-27T00:20:00+00:00", "exit_time": "2025-06-27T00:30:00+00:00", "entry_price": 2955.31692, "exit_price": 3018.33008, "stop_price": 2921.7933120000002, "target_price": 3019.84, "quantity": 5.965944954373652, "pnl": 375.93304396113945, "r_multiple": 1.8796652198056973, "exit_reason": "target", "atr_fraction": 1.6037737781121442, "status": "closed"}], "open": [], "summary": {"starting_capital": 100.0, "total_trades": 1, "wins": 1, "losses": 0, "win_rate": 1.0, "total_pnl": 375.93304396113945, "avg_r": 1.8796652198056973, "profit_factor": null, "ending_equity": 475.93304396113945, "equity_incl_unrealized": 475.93304396113945, "open_positions": 0}}</script>
+<script id="payload" type="application/json">{"starting_capital": 100.0, "equity": 100.0, "unrealized": 0, "equity_incl_unrealized": 100.0, "closed": [], "open": [], "summary": {"starting_capital": 100.0, "total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0.0, "total_pnl": 0, "avg_r": 0.0, "profit_factor": 0.0, "ending_equity": 100.0, "equity_incl_unrealized": 100.0, "open_positions": 0}, "chart_symbol": "ETHUSDT", "candles": []}</script>
 <script>
  const p=JSON.parse(document.getElementById('payload').textContent);
  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
@@ -115,5 +131,86 @@
    applyBaseline();
  });
  applyBaseline();
+
+ // ---- Candlestick chart (1 minute) with entry / stop / target lines ----
+ (function(){
+   const candles=(p.candles||[]);
+   const sym=p.chart_symbol||'ETHUSDT';
+   const el=document.getElementById('chart');
+   document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym;
+   if(!window.LightweightCharts||!candles.length){
+     el.innerHTML='<div class="empty" style="padding:40px">Grafico non disponibile (in attesa di candele dal prossimo aggiornamento).</div>';
+     return;
+   }
+   const dark=matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;
+   const chart=LightweightCharts.createChart(el,{
+     layout:{background:{color:'transparent'},textColor:dark?'#d0d0d0':'#333'},
+     grid:{vertLines:{color:dark?'#222':'#eee'},horzLines:{color:dark?'#222':'#eee'}},
+     timeScale:{timeVisible:true,secondsVisible:false,borderColor:dark?'#333':'#ccc'},
+     rightPriceScale:{borderColor:dark?'#333':'#ccc'},
+     crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+     autoSize:true,
+   });
+   const series=chart.addCandlestickSeries({
+     upColor:'#26a65b',downColor:'#e5393b',borderVisible:false,
+     wickUpColor:'#26a65b',wickDownColor:'#e5393b',
+   });
+   series.setData(candles);
+   // Active positions: entry / stop / target lines + entry marker + side.
+   const markers=[];
+   opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
+     const isLong=(t.side==='long');
+     [['Entry',Number(t.entry_price),'#2962ff',LightweightCharts.LineStyle.Solid],
+      ['Stop',Number(t.stop_price),'#e5393b',LightweightCharts.LineStyle.Dashed],
+      ['Target',Number(t.target_price),'#26a65b',LightweightCharts.LineStyle.Dashed],
+      ['Liq',t.liquidation_price!=null?Number(t.liquidation_price):null,'#b26a00',LightweightCharts.LineStyle.Dotted]
+     ].forEach(([title,price,color,style])=>{
+       if(price==null||!isFinite(price))return;
+       series.createPriceLine({price:price,color:color,lineWidth:2,lineStyle:style,
+         axisLabelVisible:true,title:title});
+     });
+     const et=Date.parse(t.entry_time)/1000;
+     if(isFinite(et))markers.push({time:Math.floor(et),position:isLong?'belowBar':'aboveBar',
+       color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
+       text:(isLong?'LONG':'SHORT')+' @'+Number(t.entry_price).toFixed(2)});
+   });
+   if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
+   chart.timeScale().fitContent();
+   // Side badge in the legend
+   const openHere=opens.filter(t=>(t.symbol||'')===sym);
+   if(openHere.length){
+     const lg=document.getElementById('legend');
+     openHere.forEach(t=>{const s=document.createElement('span');
+       s.innerHTML=`<span class="side-tag ${t.side}">${(t.side||'').toUpperCase()}</span>`;lg.appendChild(s);});
+   }
+   new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
+
+   // ---- Live update: refresh 1-minute candles from Binance every 60s ----
+   // The GitHub workflow refreshes positions every ~5 min, but the price chart
+   // stays live minute-by-minute directly in the browser.
+   const hosts=['https://api.binance.com','https://api.binance.us','https://data-api.binance.vision'];
+   let lastTime=candles.length?candles[candles.length-1].time:0;
+   async function tick(){
+     for(const h of hosts){
+       try{
+         const r=await fetch(`${h}/api/v3/klines?symbol=${sym}&interval=1m&limit=3`,{cache:'no-store'});
+         if(!r.ok)continue;
+         const arr=await r.json();
+         arr.forEach(k=>{
+           const bar={time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4]};
+           if(bar.time>=lastTime){series.update(bar);lastTime=bar.time;}
+         });
+         const last=arr[arr.length-1];
+         if(last){
+           document.getElementById('updated').textContent=
+             'Prezzo live '+sym+': '+(+last[4]).toLocaleString('it-IT',{maximumFractionDigits:2})+
+             ' · aggiornato '+new Date().toLocaleTimeString('it-IT');
+         }
+         return; // success
+       }catch(e){/* try next host */}
+     }
+   }
+   tick(); setInterval(tick,60000);
+ })();
 </script>
 </body></html>

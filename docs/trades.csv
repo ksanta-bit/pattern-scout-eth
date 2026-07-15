@@ -1,2 +1,1 @@
-symbol,session,side,signal_type,signal_time,entry_time,exit_time,entry_price,exit_price,stop_price,target_price,quantity,pnl,r_multiple,exit_reason,atr_fraction,status
-ETHUSDT,2025-06-27,long,john_wick,2025-06-27T00:15:00+00:00,2025-06-27T00:20:00+00:00,2025-06-27T00:30:00+00:00,2955.31692,3018.33008,2921.7933120000002,3019.84,5.965944954373652,375.93304396113945,1.8796652198056973,target,1.6037737781121442,closed
+
