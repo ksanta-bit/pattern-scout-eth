@@ -69,6 +69,7 @@
     "sizing_mode": "risk",
     "maintenance_margin_rate": 0.005,
     "auto_leverage": true,
-    "liquidation_safety": 1.3
+    "liquidation_safety": 1.3,
+    "compound": true
   }
 }

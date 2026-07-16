@@ -89,6 +89,9 @@ class RiskConfig:
     # triggers before liquidation (liq distance >= liquidation_safety * stop distance).
     auto_leverage: bool = True
     liquidation_safety: float = 1.3
+    # Compounding: size positions on the CURRENT equity (capital + realized PnL) instead
+    # of the fixed starting capital, so the whole realized capital is reinvested.
+    compound: bool = False
 
 
 @dataclass

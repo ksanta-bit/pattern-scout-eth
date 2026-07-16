@@ -812,7 +812,8 @@ def run_crypto_paper(config: PatternScoutConfig, symbols: list[str], exchange: s
                      state_path: Optional[Path] = None,
                      on_event: Optional[Callable[[str], None]] = None,
                      feed=None, max_iterations: Optional[int] = None,
-                     sleep: bool = True, minute_bars_by_symbol: Optional[dict] = None) -> "PaperTrader":
+                     sleep: bool = True, minute_bars_by_symbol: Optional[dict] = None,
+                     equity_override: Optional[float] = None) -> "PaperTrader":
     """Paper-live on real crypto prices.
 
     Pulls public candlesticks (no exchange key needed) and fills orders with the
@@ -825,11 +826,11 @@ def run_crypto_paper(config: PatternScoutConfig, symbols: list[str], exchange: s
 
     log = on_event or (lambda m: print(m, flush=True))
     feed = feed or make_feed(exchange, interval)
-    broker = PaperBroker(config)
+    broker = PaperBroker(config, starting_equity=equity_override)
     trader = PaperTrader(config, symbols, broker, state_path=state_path, on_event=log)
 
     log(f"Crypto paper-live | exchange={exchange} interval={interval} symbols={', '.join(symbols)} "
-        f"| starting equity {broker.starting_equity:.2f}")
+        f"| sizing equity {broker.starting_equity:.2f}")
     # Provide 1-minute candles (if any) for precise intrabar stop/target sequencing.
     for sym in symbols:
         mb = (minute_bars_by_symbol or {}).get(sym)
@@ -926,6 +927,8 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
             log(f"[{sym}] 1m history error: {exc}")
 
     import copy
+    starting = float(config.risk.account_size)
+    compound = bool(getattr(config.risk, "compound", False))
     variant_summaries = {}
     for vkey, enabled in [("off", False), ("on", True)]:
         cfg_v = copy.deepcopy(config)
@@ -933,13 +936,20 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         prev = cumulative["variants"].get(vkey, {"trades": {}, "open": {}})
         trades_v = dict(prev.get("trades", {}))
         open_v = {}
+        # Compounding: size this run's new trades on the realised equity so far.
+        prev_realized = sum(float(t.get("pnl") or 0.0)
+                            for t in prev.get("trades", {}).values() if t.get("status") == "closed")
+        sizing_equity = (starting + prev_realized) if compound else starting
         for sym in symbols:
             trader = run_crypto_paper(cfg_v, [sym], interval=interval, warmup_days=lookback_days,
                                       feed=feed, max_iterations=1, sleep=False,
                                       on_event=(log if vkey == ("on" if config.daily_context.enabled else "off") else _base_log),
-                                      minute_bars_by_symbol=minute_bars)
+                                      minute_bars_by_symbol=minute_bars,
+                                      equity_override=sizing_equity)
             for t in trader.broker.trades:
-                trades_v[f"{sym}:{t.session}:{t.signal_type}"] = t.to_dict()
+                key = f"{sym}:{t.session}:{t.signal_type}"
+                # Keep already-recorded closed trades immutable (their size/PnL is realised).
+                trades_v.setdefault(key, t.to_dict())
             eng = trader.engines.get(sym)
             last_price = float(eng._rows[-1]["close"]) if (eng and eng._rows) else None
             for _, t in trader.broker.open_positions.items():
