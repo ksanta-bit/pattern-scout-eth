@@ -74,13 +74,18 @@ class RiskConfig:
     risk_fraction: float = 0.01
     fixed_quantity: Optional[float] = None
     point_value: float = 1.0
-    # Leverage for margin/perp trading (crypto). 1.0 = spot/no leverage.
+    # Max leverage for margin/perp trading (crypto). 1.0 = spot/no leverage. Up to 100x.
     leverage: float = 1.0
-    # "risk": size by risk_fraction and stop distance (leverage only caps notional).
+    # "risk": size by risk_fraction and stop distance (leverage caps notional/margin).
     # "leverage": size the position to full notional = equity * leverage (aggressive).
     sizing_mode: str = "risk"
     # Isolated-margin maintenance rate, used to model the liquidation price.
     maintenance_margin_rate: float = 0.005
+    # Risk management AS A FUNCTION OF LEVERAGE: when true the bot uses UP TO `leverage`
+    # but automatically lowers the effective leverage per trade so the stop always
+    # triggers before liquidation (liq distance >= liquidation_safety * stop distance).
+    auto_leverage: bool = True
+    liquidation_safety: float = 1.3
 
 
 @dataclass
@@ -88,6 +93,10 @@ class PatternScoutConfig:
     timezone: str = "America/New_York"
     session_open: str = "09:30"
     session_close: str = "16:00"
+    # Multi-session (crypto 24/7): list of daily anchor times, each opening a new
+    # "session" (opening range + signal window). Empty = classic single session.
+    session_anchors: list = field(default_factory=list)
+    session_window_minutes: int = 90
     base_timeframe_minutes: int = 5
     opening_minutes: int = 15
     signal_cutoff_minutes: int = 60

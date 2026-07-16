@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 import json
+import os
 from pathlib import Path
 import time
 from typing import Callable, Optional
@@ -187,6 +188,7 @@ class PaperBroker(Broker):
 @dataclass
 class SymbolState:
     session_date: Optional[str] = None
+    session_id: Optional[str] = None       # per-window id (supports multiple sessions/day)
     phase: str = "collecting"  # collecting | armed | pending | in_position | done
     trades_done: int = 0
     locked_signal: Optional[Signal] = None
@@ -205,11 +207,26 @@ def liquidation_price(side: str, entry: float, leverage: float, mmr: float) -> O
     return entry * (1.0 + frac)
 
 
+def effective_leverage(entry: float, stop: float, cfg: PatternScoutConfig) -> float:
+    """Effective per-trade leverage. With ``auto_leverage`` the leverage is lowered so
+    the liquidation price stays beyond the stop (liq distance >= safety * stop distance),
+    which caps the real loss at the intended risk even at 100x nominal."""
+    risk = cfg.risk
+    max_lev = max(1.0, float(risk.leverage))
+    if not getattr(risk, "auto_leverage", False) or entry <= 0:
+        return max_lev
+    stop_pct = abs(entry - stop) / entry
+    if stop_pct <= 0:
+        return max_lev
+    safe = 1.0 / (risk.liquidation_safety * stop_pct + risk.maintenance_margin_rate)
+    return float(max(1.0, min(max_lev, safe)))
+
+
 def size_position(equity: float, entry_price: float, risk_per_unit: float,
-                  cfg: PatternScoutConfig) -> tuple[float, float, float]:
+                  cfg: PatternScoutConfig, leverage: Optional[float] = None) -> tuple[float, float, float]:
     """Return (quantity, margin, notional) honouring risk, leverage and margin caps."""
     risk = cfg.risk
-    lev = max(1.0, float(risk.leverage))
+    lev = max(1.0, float(leverage if leverage is not None else risk.leverage))
     if risk.fixed_quantity is not None:
         qty = float(risk.fixed_quantity)
     elif risk.sizing_mode == "leverage":
@@ -247,7 +264,7 @@ class SymbolEngine:
     ``on_bar``; it emits human-readable events and drives the broker."""
 
     def __init__(self, symbol: str, config: PatternScoutConfig, broker: Broker,
-                 keep_sessions: int = 25, on_event: Optional[Callable[[str], None]] = None):
+                 keep_sessions: int = 20, on_event: Optional[Callable[[str], None]] = None):
         self.symbol = symbol
         self.config = config
         self.broker = broker
@@ -257,6 +274,7 @@ class SymbolEngine:
         self.session_close = parse_clock(config.session_close)
         self._rows: list[dict] = []
         self._minute_bars: list[dict] = []  # optional 1m bars for precise stop/target sequencing
+        self._cur_mfo: Optional[float] = None  # current bar's minutes-from-window-open
         self.state = SymbolState()
 
     def set_minute_bars(self, bars: list) -> None:
@@ -295,9 +313,8 @@ class SymbolEngine:
     def _is_session_close(self, ts: pd.Timestamp) -> bool:
         return ts.time() >= self.session_close
 
-    def _reset_session(self, date_str: str) -> None:
-        self.state = SymbolState(session_date=date_str, phase="collecting",
-                                 trades_done=self.state.trades_done if False else 0)
+    def _reset_session(self, date_str: str, session_id: Optional[str] = None) -> None:
+        self.state = SymbolState(session_date=date_str, session_id=session_id, phase="collecting")
 
     def seed_history(self, bars: list[Bar]) -> None:
         """Load prior-session bars into the buffer WITHOUT running the strategy.
@@ -310,7 +327,7 @@ class SymbolEngine:
                 self._rows.append(row)
         self._trim_history()
         # Force a fresh session on the next live bar.
-        self.state = SymbolState(session_date=None, phase="collecting")
+        self.state = SymbolState(session_date=None, session_id=None, phase="collecting")
 
     def _trim_history(self) -> None:
         if not self._rows:
@@ -325,18 +342,15 @@ class SymbolEngine:
         ts = row["timestamp"]
         date_str = str(ts.date())
 
-        # New session?
+        # Trim the rolling buffer on a new calendar day (keeps annotate fast).
         if self.state.session_date != date_str:
             self._trim_history()
-            self._reset_session(date_str)
-
-        # Only keep regular-session bars for the strategy (matches add_session_columns).
-        if not (parse_clock(self.config.session_open) <= ts.time() <= self.session_close):
-            return
+            self.state.session_date = date_str
 
         self._rows.append(row)
 
-        # First: manage an already-open position on this fresh bar.
+        # Manage an already-open position on EVERY bar (positions can run past a
+        # single session window; they exit on stop/target/trailing or session close).
         if self.state.phase == "in_position":
             if isinstance(self.broker, PaperBroker):
                 self._manage_position(row)
@@ -344,13 +358,23 @@ class SymbolEngine:
                 self._poll_live_exit(row)
             return
 
-        # Build the annotated session-so-far (reuses the exact backtest brain).
+        # Build the annotated frame and find which session window this bar belongs to.
         try:
             annotated = annotate_pattern_scout(self.bars.copy(), self.config)
         except Exception as exc:  # pragma: no cover - defensive
             self._emit(f"annotate error: {exc}")
             return
-        session_frame = annotated.loc[annotated["session"].astype(str) == date_str].copy()
+        cur = annotated.loc[annotated["timestamp"] == ts]
+        if cur.empty:
+            return  # bar is outside every session window
+        sid = str(cur.iloc[-1]["session"])
+        self._cur_mfo = float(cur.iloc[-1]["minutes_from_open"])
+
+        # New session window -> fresh state (each window is an independent opportunity).
+        if self.state.session_id != sid:
+            self._reset_session(date_str, session_id=sid)
+
+        session_frame = annotated.loc[annotated["session"].astype(str) == sid].copy()
         if session_frame.empty:
             return
 
@@ -364,11 +388,11 @@ class SymbolEngine:
             setup = build_session_setup(session_frame, self.config)
             if setup is None:
                 self.state.phase = "done"
-                self._emit(f"{date_str}: no valid setup (no manipulation / daily context). Standing down.")
+                self._emit(f"{sid}: no valid setup (no manipulation / daily context). Standing down.")
                 return
             self.state.phase = "armed"
             self._emit(
-                f"{date_str}: SETUP {setup.side.upper()} | opening [{setup.opening_low:.2f}, "
+                f"{sid}: SETUP {setup.side.upper()} | opening [{setup.opening_low:.2f}, "
                 f"{setup.opening_high:.2f}] range {setup.opening_range:.2f} "
                 f"({setup.atr_fraction*100:.0f}% of ATR {setup.atr:.2f})"
                 f"{' PREFERRED' if setup.preferred else ''}. Scanning 5m for John Wick / Power of Tower."
@@ -409,7 +433,7 @@ class SymbolEngine:
             self.state.phase = "armed"
             return
         ts = row["timestamp"]
-        mfo = self._minutes_from_open(ts)
+        mfo = self._cur_mfo if self._cur_mfo is not None else self._minutes_from_open(ts)
 
         # Respect the trigger cutoff; discard the signal if it expires unfilled.
         if mfo > self.config.trigger_cutoff_minutes:
@@ -449,12 +473,14 @@ class SymbolEngine:
             self.state.locked_signal = None
             return
         equity = self.broker.equity if isinstance(self.broker, PaperBroker) else self.config.risk.account_size
-        qty, margin, notional = size_position(equity, entry_price, risk_per_unit, self.config)
+        # Leverage as a function of risk: use UP TO the configured leverage, but auto-lower
+        # it so the stop always triggers before liquidation (keeps the loss = intended risk).
+        lev = effective_leverage(entry_price, stop_price, self.config)
+        qty, margin, notional = size_position(equity, entry_price, risk_per_unit, self.config, leverage=lev)
         if qty <= 0:
             self.state.phase = "armed"
             self.state.locked_signal = None
             return
-        lev = max(1.0, float(self.config.risk.leverage))
         liq = liquidation_price(sig.side, entry_price, lev, self.config.risk.maintenance_margin_rate)
         trade = self.broker.open_trade(self.symbol, sig, ts, entry_price, qty)
         if trade is not None:
@@ -936,7 +962,7 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         f"open: {len(d['open'])} | equity {d['equity']:.2f}")
     _write_cumulative_reports(out, variant_summaries, default_variant, config,
                               chart_symbol=chart_symbol, chart_candles=chart_candles,
-                              bot_log=bot_log[-25:])
+                              bot_log=bot_log[-25:], symbols=list(symbols))
     return cumulative
 
 
@@ -963,7 +989,8 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
                               config: PatternScoutConfig,
                               chart_symbol: Optional[str] = None,
                               chart_candles: Optional[list] = None,
-                              bot_log: Optional[list] = None) -> None:
+                              bot_log: Optional[list] = None,
+                              symbols: Optional[list] = None) -> None:
     starting = float(config.risk.account_size)
     dv = variant_summaries[default_variant]
     rows = dv["closed"]
@@ -988,6 +1015,9 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
         chart_symbol=chart_symbol,
         chart_candles=chart_candles or [],
         bot_log=bot_log or [],
+        leverage=float(config.risk.leverage),
+        repo=os.environ.get("GITHUB_REPOSITORY", ""),
+        symbols=symbols or ([chart_symbol] if chart_symbol else []),
     )
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")
 

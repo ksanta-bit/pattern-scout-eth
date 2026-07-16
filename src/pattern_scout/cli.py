@@ -99,6 +99,10 @@ def main() -> None:
     paper_crypto.add_argument("--reset", action="store_true", help="Wipe the cumulative state (restart from starting capital).")
     paper_crypto.add_argument("--daily-filter", choices=["keep", "on", "off"], default="keep",
                               help="Override the daily breakout/retest filter for this run.")
+    paper_crypto.add_argument("--leverage", type=float, default=None,
+                              help="Override max leverage (e.g. 5, 20, 50, 100). Risk auto-scales with leverage.")
+    paper_crypto.add_argument("--settings", default="bot_settings.json",
+                              help="JSON with dashboard-chosen overrides (leverage, daily_filter, risk, symbol, session).")
 
     optimize = sub.add_parser(
         "optimize",
@@ -207,9 +211,39 @@ def run_paper_crypto(args: argparse.Namespace) -> None:
         print("No symbols provided.", file=sys.stderr)
         raise SystemExit(2)
 
+    # Dashboard-chosen settings persisted in bot_settings.json (override the config file).
+    SESSION_PRESETS = {
+        "daily": ["00:00"],
+        "three": ["00:00", "08:00", "13:30"],
+        "us": ["13:30"],
+    }
+    settings_path = Path(args.settings) if args.settings else None
+    if settings_path and settings_path.exists():
+        try:
+            s = json.loads(settings_path.read_text(encoding="utf-8"))
+        except Exception:
+            s = {}
+        if s.get("leverage"):
+            config.risk.leverage = max(1.0, min(100.0, float(s["leverage"])))
+        if s.get("daily_filter") in ("on", "off"):
+            config.daily_context.enabled = (s["daily_filter"] == "on")
+        if s.get("risk_fraction"):
+            config.risk.risk_fraction = float(s["risk_fraction"])
+        if s.get("session_preset") in SESSION_PRESETS:
+            config.session_anchors = SESSION_PRESETS[s["session_preset"]]
+        if isinstance(s.get("symbols"), list) and s["symbols"]:
+            symbols = [str(x).upper() for x in s["symbols"]]
+        elif s.get("symbol"):
+            symbols = [str(s["symbol"]).upper()]
+        if s:
+            print(f"Impostazioni dashboard applicate: {s}")
+
     if args.daily_filter != "keep":
         config.daily_context.enabled = (args.daily_filter == "on")
         print(f"Filtro daily forzato: {'ATTIVO' if config.daily_context.enabled else 'DISATTIVO'}")
+    if args.leverage is not None:
+        config.risk.leverage = max(1.0, min(100.0, float(args.leverage)))
+        print(f"Leva massima: {config.risk.leverage:.0f}x (rischio auto in funzione della leva)")
 
     if args.reset:
         for pth in [Path(args.cumulative), Path(args.state)]:

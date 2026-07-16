@@ -101,11 +101,25 @@ class LeverageAndFeeTests(unittest.TestCase):
         self.assertAlmostEqual(qty, 2.0 / 30.0, places=6)
         self.assertAlmostEqual(margin, notional / 20.0, places=6)
 
+    def test_auto_leverage_scales_with_stop(self):
+        from pattern_scout.paper import effective_leverage
+        cfg = PatternScoutConfig(risk=RiskConfig(leverage=100, auto_leverage=True,
+                                                 liquidation_safety=1.3, maintenance_margin_rate=0.005))
+        wide = effective_leverage(1000.0, 950.0, cfg)    # 5% stop
+        tight = effective_leverage(1000.0, 997.0, cfg)   # 0.3% stop
+        self.assertLess(wide, 20.0)          # auto-reduced well below the 100x cap
+        self.assertGreaterEqual(tight, wide) # tighter stop allows more leverage
+        self.assertLessEqual(tight, 100.0)   # never above the cap
+        # With auto_leverage off, it always returns the configured cap.
+        cfg.risk.auto_leverage = False
+        self.assertEqual(effective_leverage(1000.0, 950.0, cfg), 100.0)
+
     def test_net_pnl_subtracts_fees(self):
         cfg = PatternScoutConfig(
             atr_period=1, atr_min_periods=1, opening_body_fraction_min=0.5,
             manipulation_threshold=0.2, daily_context=DailyContextConfig(enabled=False),
-            risk=RiskConfig(account_size=100, risk_fraction=0.02, leverage=20, point_value=1.0),
+            risk=RiskConfig(account_size=100, risk_fraction=0.02, leverage=20, point_value=1.0,
+                            auto_leverage=False),
             execution=ExecutionConfig(taker_fee_pct=0.0006, maker_fee_pct=0.0002),
         )
         data = _john_wick_frame()

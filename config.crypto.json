@@ -2,6 +2,8 @@
   "timezone": "UTC",
   "session_open": "00:00",
   "session_close": "23:55",
+  "session_anchors": ["00:00", "08:00", "13:30"],
+  "session_window_minutes": 90,
   "base_timeframe_minutes": 5,
   "opening_minutes": 15,
   "signal_cutoff_minutes": 60,
@@ -64,6 +66,8 @@
     "point_value": 1.0,
     "leverage": 20.0,
     "sizing_mode": "risk",
-    "maintenance_margin_rate": 0.005
+    "maintenance_margin_rate": 0.005,
+    "auto_leverage": true,
+    "liquidation_safety": 1.3
   }
 }

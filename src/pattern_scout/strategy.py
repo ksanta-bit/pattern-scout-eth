@@ -96,12 +96,53 @@ def normalize_ohlcv(data: pd.DataFrame, config: PatternScoutConfig) -> pd.DataFr
 
 def annotate_pattern_scout(data: pd.DataFrame, config: PatternScoutConfig) -> pd.DataFrame:
     frame = normalize_ohlcv(data, config) if "session" not in data.columns else data.copy()
-    frame = add_session_columns(frame, config)
-    frame = add_daily_atr(frame, config)
+    if getattr(config, "session_anchors", None):
+        # Multi-session (crypto): the daily ATR must span the FULL 24h day, not the
+        # narrow session window, so compute it from the full frame first, then window.
+        atr_by_date = _daily_atr_by_date(frame, config)
+        frame = add_session_columns(frame, config)
+        frame["atr"] = frame["calendar_date"].map(atr_by_date)
+    else:
+        frame = add_session_columns(frame, config)
+        frame = add_daily_atr(frame, config)
     frame = add_opening_range_columns(frame, config)
     frame = add_daily_context_columns(frame, config)
     frame = add_candle_shape_columns(frame)
     return frame
+
+
+def _daily_true_range(daily: pd.DataFrame) -> pd.Series:
+    prev_close = daily["daily_close"].shift(1)
+    return pd.concat(
+        [
+            daily["daily_high"] - daily["daily_low"],
+            (daily["daily_high"] - prev_close).abs(),
+            (daily["daily_low"] - prev_close).abs(),
+        ],
+        axis=1,
+    ).max(axis=1)
+
+
+def _atr_from_tr(tr: pd.Series, config: PatternScoutConfig) -> pd.Series:
+    method = getattr(config, "atr_method", "wilder").lower()
+    if method in {"wilder", "wilders", "rma", "ema"}:
+        atr = tr.ewm(alpha=1.0 / config.atr_period, min_periods=config.atr_min_periods, adjust=False).mean()
+    else:
+        atr = tr.rolling(config.atr_period, min_periods=config.atr_min_periods).mean()
+    return atr.shift(1)
+
+
+def _daily_atr_by_date(data: pd.DataFrame, config: PatternScoutConfig) -> dict:
+    """Daily ATR keyed by calendar date, computed from the FULL day's bars (24h)."""
+    frame = data.copy()
+    frame["calendar_date"] = frame["timestamp"].dt.date
+    daily = frame.groupby("calendar_date").agg(
+        daily_high=("high", "max"),
+        daily_low=("low", "min"),
+        daily_close=("close", "last"),
+    )
+    atr = _atr_from_tr(_daily_true_range(daily), config)
+    return atr.to_dict()
 
 
 def parse_clock(value: str) -> time:
@@ -111,16 +152,34 @@ def parse_clock(value: str) -> time:
 
 def add_session_columns(data: pd.DataFrame, config: PatternScoutConfig) -> pd.DataFrame:
     frame = data.copy()
-    session_open = parse_clock(config.session_open)
-    session_close = parse_clock(config.session_close)
-    local_time = frame["timestamp"].dt.time
-    in_session = (local_time >= session_open) & (local_time <= session_close)
-    frame = frame.loc[in_session].copy()
-    frame["session"] = frame["timestamp"].dt.date
-    open_minutes = session_open.hour * 60 + session_open.minute
+    frame["calendar_date"] = frame["timestamp"].dt.date
     minutes = frame["timestamp"].dt.hour * 60 + frame["timestamp"].dt.minute
-    frame["minutes_from_open"] = minutes - open_minutes
-    frame = frame.loc[frame["minutes_from_open"] >= 0].copy()
+    anchors = getattr(config, "session_anchors", None)
+    if anchors:
+        window = int(config.session_window_minutes)
+        anchor_mins = sorted({parse_clock(a).hour * 60 + parse_clock(a).minute for a in anchors})
+        dates = frame["timestamp"].dt.strftime("%Y-%m-%d")
+        session_id = pd.Series(pd.NA, index=frame.index, dtype="object")
+        mfo = pd.Series(np.nan, index=frame.index)
+        for a in anchor_mins:
+            mask = (minutes >= a) & (minutes < a + window) & session_id.isna()
+            label = f"@{a // 60:02d}:{a % 60:02d}"
+            session_id.loc[mask] = dates.loc[mask] + label
+            mfo.loc[mask] = minutes.loc[mask] - a
+        frame["session"] = session_id
+        frame["minutes_from_open"] = mfo
+        frame = frame.loc[frame["session"].notna()].copy()
+    else:
+        session_open = parse_clock(config.session_open)
+        session_close = parse_clock(config.session_close)
+        local_time = frame["timestamp"].dt.time
+        in_session = (local_time >= session_open) & (local_time <= session_close)
+        frame = frame.loc[in_session].copy()
+        frame["session"] = frame["timestamp"].dt.date
+        open_minutes = session_open.hour * 60 + session_open.minute
+        m2 = frame["timestamp"].dt.hour * 60 + frame["timestamp"].dt.minute
+        frame["minutes_from_open"] = m2 - open_minutes
+        frame = frame.loc[frame["minutes_from_open"] >= 0].copy()
     frame["bar_number"] = frame.groupby("session").cumcount()
     return frame.reset_index(drop=True)
 
@@ -204,51 +263,60 @@ def add_daily_context_columns(data: pd.DataFrame, config: PatternScoutConfig) ->
     if not config.daily_context.enabled:
         return frame
 
-    daily = frame.groupby("session").agg(
+    # Daily support/resistance levels keyed by CALENDAR DATE (works whether a day has
+    # one session or several). Opening extremes stay per session.
+    byday = frame.groupby("calendar_date").agg(
         daily_high=("high", "max"),
         daily_low=("low", "min"),
         daily_close=("close", "last"),
+    )
+    day_list = list(byday.index)
+    day_pos = {d: i for i, d in enumerate(day_list)}
+    sess = frame.groupby("session").agg(
         atr=("atr", "first"),
         opening_high=("opening_high", "first"),
         opening_low=("opening_low", "first"),
         opening_direction=("opening_direction", "first"),
+        calendar_date=("calendar_date", "first"),
     )
-    sessions = list(daily.index)
     cfg = config.daily_context
-    for i, session in enumerate(sessions):
-        current = daily.iloc[i]
-        atr = float(current["atr"]) if pd.notna(current["atr"]) else np.nan
+    for session in sess.index:
+        row = sess.loc[session]
+        atr = float(row["atr"]) if pd.notna(row["atr"]) else np.nan
         if not np.isfinite(atr) or atr <= 0:
             continue
-        if current["opening_direction"] == "down":
+        if row["opening_direction"] == "down":
             side: Side = "long"
-        elif current["opening_direction"] == "up":
+        elif row["opening_direction"] == "up":
             side = "short"
         else:
+            continue
+        i = day_pos.get(row["calendar_date"])
+        if i is None:
             continue
 
         candidate_start = max(cfg.min_base_sessions, i - cfg.breakout_recent_sessions)
         best: dict | None = None
         for breakout_pos in range(candidate_start, i):
             base_start = max(0, breakout_pos - cfg.lookback_sessions)
-            base = daily.iloc[base_start:breakout_pos]
+            base = byday.iloc[base_start:breakout_pos]
             if len(base) < cfg.min_base_sessions:
                 continue
-            breakout = daily.iloc[breakout_pos]
+            breakout = byday.iloc[breakout_pos]
             buffer = atr * cfg.breakout_buffer_atr_fraction
             if side == "long":
                 level = float(base["daily_high"].max())
                 breakout_value = float(breakout["daily_close"] if cfg.require_breakout_close else breakout["daily_high"])
                 if breakout_value <= level + buffer:
                     continue
-                opening_extreme = float(current["opening_low"])
+                opening_extreme = float(row["opening_low"])
                 kind = "breakout_retest_support"
             else:
                 level = float(base["daily_low"].min())
                 breakout_value = float(breakout["daily_close"] if cfg.require_breakout_close else breakout["daily_low"])
                 if breakout_value >= level - buffer:
                     continue
-                opening_extreme = float(current["opening_high"])
+                opening_extreme = float(row["opening_high"])
                 kind = "breakdown_retest_resistance"
 
             tolerance = max(atr * cfg.retest_tolerance_atr_fraction, abs(level) * cfg.retest_tolerance_pct)
@@ -261,7 +329,7 @@ def add_daily_context_columns(data: pd.DataFrame, config: PatternScoutConfig) ->
                 "daily_context_side": side,
                 "daily_context_level": level,
                 "daily_context_kind": kind,
-                "daily_context_breakout_session": str(sessions[breakout_pos]),
+                "daily_context_breakout_session": str(day_list[breakout_pos]),
                 "daily_context_distance": distance,
                 "daily_context_distance_atr": distance_atr,
                 "daily_context_tolerance": tolerance,

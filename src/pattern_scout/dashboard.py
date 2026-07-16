@@ -465,7 +465,8 @@ def _render_dashboard(payload: dict) -> str:
 def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
                            variants: dict, default_variant: str = "off",
                            chart_symbol: str | None = None,
-                           chart_candles: list | None = None, bot_log: list | None = None) -> Path:
+                           chart_candles: list | None = None, bot_log: list | None = None,
+                           leverage: float = 1.0, repo: str = "", symbols: list | None = None) -> Path:
     """Interactive paper dashboard with a toggle button that switches between the
     two strategy variants (daily filter OFF / ON): 1-minute candlestick chart with
     entry/stop/target segments, reset button, open/closed logs and a bot log."""
@@ -479,6 +480,9 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
         "chart_symbol": chart_symbol or "",
         "candles": chart_candles or [],
         "bot_log": bot_log or [],
+        "leverage": leverage,
+        "repo": repo or "",
+        "symbols": symbols or ([chart_symbol] if chart_symbol else []),
         "updated": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
@@ -544,13 +548,49 @@ def _render_crypto(payload: dict) -> str:
    </div>
  </header>
  <div class="sub" id="updated"></div>
+ <details id="settings" style="border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px 14px;margin-bottom:14px">
+   <summary style="cursor:pointer;font-weight:600">⚙ Impostazioni del bot (selezionabili)</summary>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px">
+     <label>Leva max<br><select id="set_lev">
+       <option value="keep">— invariata —</option><option>5</option><option>10</option>
+       <option>20</option><option>50</option><option>100</option></select></label>
+     <label>Filtro daily<br><select id="set_filter">
+       <option value="keep">— invariato —</option><option value="off">Disattivo</option>
+       <option value="on">Attivo</option></select></label>
+     <label>Rischio/trade<br><select id="set_risk">
+       <option value="keep">— invariato —</option><option value="0.005">0,5%</option>
+       <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03">3%</option></select></label>
+     <label>Sessioni<br><select id="set_sess">
+       <option value="keep">— invariate —</option><option value="daily">24h (00:00)</option>
+       <option value="three">3 sessioni (00/08/13:30)</option><option value="us">US (13:30)</option></select></label>
+     <label>Simboli<br>
+       <span style="display:inline-flex;gap:10px;flex-wrap:wrap">
+       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="ETHUSDT"> ETH</label>
+       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="BTCUSDT"> BTC</label>
+       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="SOLUSDT"> SOL</label>
+       </span></label>
+     <label style="display:flex;align-items:end;gap:6px"><input type="checkbox" id="set_reset"> Azzera a 100 USDT</label>
+   </div>
+   <div style="margin-top:10px">
+     <label style="font-size:12px;color:var(--muted)">Token GitHub (scope <code>workflow</code>, resta solo nel tuo browser)</label><br>
+     <input type="password" id="ghtok" placeholder="ghp_… o github_pat_…" style="width:100%;max-width:420px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--fg)">
+   </div>
+   <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+     <button id="applyBtn">Applica impostazioni</button>
+     <span class="sub" id="applyStatus"></span>
+   </div>
+   <div class="sub" style="margin-top:8px">Le impostazioni lanciano il bot su GitHub con le tue scelte e restano attive anche per i giri automatici. Serve un token una volta sola: GitHub → Settings → Developer settings → Fine-grained token → repo del bot → permesso <strong>Actions: Read and write</strong>.</div>
+ </details>
  <section class="grid">
    <div class="card"><div class="label">Capitale iniziale</div><div class="value" id="cap">100</div></div>
    <div class="card"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
    <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
    <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
  </section>
- <h2 id="chartTitle">Grafico 1 minuto</h2>
+ <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+   <span id="chartTitle">Grafico 1 minuto</span>
+   <select id="chartSym" style="font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg)"></select>
+ </h2>
  <div id="chart"></div>
  <div class="legend" id="legend">
    <span><span class="dot" style="background:#2962ff"></span>Entry</span>
@@ -597,7 +637,9 @@ def _render_crypto(payload: dict) -> str:
    const btn=document.getElementById('filterToggle');
    if(btn){btn.textContent='Filtro daily: '+(on?'ATTIVO':'DISATTIVO');btn.style.background=on?'var(--good)':'var(--card)';btn.style.color=on?'#fff':'var(--fg)';}
    const fs=document.getElementById('filterStatus');
-   if(fs)fs.innerHTML='Vista: <strong>'+(on?'CON filtro daily (breakout+retest)':'SENZA filtro daily — nucleo del video')+'</strong>';
+   const lev=Number(p.leverage)||1;
+   if(fs)fs.innerHTML='Vista: <strong>'+(on?'CON filtro daily':'SENZA filtro daily — nucleo del video')+
+     '</strong> · Leva max <strong>'+lev.toFixed(0)+'x</strong> (rischio auto)';
  }
  // Bot log (what the strategy decided on the last run)
  (function(){const bl=document.getElementById('botLog');if(bl){
@@ -652,13 +694,52 @@ def _render_crypto(payload: dict) -> str:
  syncFilterUI();
  applyBaseline();
 
+ // ---- Settings panel: dispatch the GitHub workflow with the chosen options ----
+ (function(){
+   const tokKey='ps_ghtoken';
+   const savedTok=localStorage.getItem(tokKey);
+   if(savedTok)document.getElementById('ghtok').value=savedTok;
+   const st=(m)=>{document.getElementById('applyStatus').textContent=m;};
+   document.getElementById('applyBtn').addEventListener('click',async()=>{
+     const repo=p.repo||'';
+     const tok=(document.getElementById('ghtok').value||'').trim();
+     if(tok)localStorage.setItem(tokKey,tok);
+     if(!repo){st('Apri la dashboard pubblicata su GitHub Pages per usare le impostazioni.');return;}
+     if(!tok){st('Inserisci un token GitHub (permesso Actions: Read and write).');return;}
+     const syms=Array.from(document.querySelectorAll('.set_sym:checked')).map(x=>x.value);
+     const inputs={
+       leverage:document.getElementById('set_lev').value,
+       daily_filter:document.getElementById('set_filter').value,
+       risk:document.getElementById('set_risk').value,
+       session:document.getElementById('set_sess').value,
+       symbols:syms.length?syms.join(','):'keep',
+       reset:document.getElementById('set_reset').checked?'true':'false'
+     };
+     st('Invio impostazioni al bot…');
+     try{
+       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/paper-crypto.yml/dispatches',{
+         method:'POST',
+         headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+         body:JSON.stringify({ref:'main',inputs:inputs})
+       });
+       if(r.status===204)st('✓ Impostazioni inviate. Il bot le applica tra ~1-2 minuti (poi ricarica).');
+       else{const t=await r.text();st('Errore GitHub '+r.status+': '+t.slice(0,140));}
+     }catch(e){st('Errore di rete: '+e);}
+   });
+ })();
+
  // ---- Candlestick chart (1 minute): Bitget source, Italian time, SL/TP as
  //      time-bounded segments, daily high/low reference lines ----
  (function(){
    let candles=(p.candles||[]);
-   const sym=p.chart_symbol||'ETHUSDT';
+   let sym=p.chart_symbol||'ETHUSDT';
    const el=document.getElementById('chart');
-   document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym+' (Bitget · ora italiana)';
+   // Symbol picker (all selected symbols trade; this only changes what's DISPLAYED).
+   const symSel=document.getElementById('chartSym');
+   const symList=(p.symbols&&p.symbols.length?p.symbols:[sym]);
+   if(symSel){symSel.innerHTML=symList.map(s=>'<option'+(s===sym?' selected':'')+'>'+s+'</option>').join('');}
+   function setTitle(){document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym+' (Bitget · ora italiana)';}
+   setTitle();
    if(!window.LightweightCharts){
      el.innerHTML='<div class="empty" style="padding:40px">Libreria grafico non caricata (riprova con la rete attiva).</div>';
      return;
@@ -793,6 +874,18 @@ def _render_crypto(payload: dict) -> str:
        ' · '+tHM.format(Date.now());
    }
    tick(); setInterval(tick,60000);
+
+   // Switch the displayed symbol (data-only; all symbols keep trading server-side).
+   if(symSel){symSel.addEventListener('change',()=>{
+     sym=symSel.value; setTitle();
+     seeded=false; allBars=[]; lastTime=0; candles=[];
+     series.setData([]);
+     if(window.__redrawPositions)window.__redrawPositions();
+     if(dhi)dhi.setData([]); if(dlo)dlo.setData([]);
+     posDrawn=false;
+     el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico '+sym+'…</div>');
+     tick();
+   });}
  })();
 </script>
 </body></html>

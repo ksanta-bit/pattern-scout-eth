@@ -22,6 +22,25 @@ on:
         type: choice
         options: ["keep", "on", "off"]
         default: "keep"
+      leverage:
+        description: "Leva massima (rischio auto in funzione della leva)"
+        type: choice
+        options: ["keep", "5", "10", "20", "50", "100"]
+        default: "keep"
+      risk:
+        description: "Rischio per trade"
+        type: choice
+        options: ["keep", "0.005", "0.01", "0.02", "0.03"]
+        default: "keep"
+      session:
+        description: "Sessioni (ancoraggi)"
+        type: choice
+        options: ["keep", "daily", "three", "us"]
+        default: "keep"
+      symbols:
+        description: "Simboli (lista separata da virgola, es. ETHUSDT,BTCUSDT,SOLUSDT)"
+        type: string
+        default: "keep"
 
 concurrency:
   group: paper-crypto
@@ -48,17 +67,27 @@ jobs:
       - name: Install dependencies
         run: pip install pandas numpy
 
-      - name: Run one paper pass (ETHUSDT)
+      - name: Apply dashboard settings (on manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          IN_LEV: ${{ inputs.leverage }}
+          IN_FILTER: ${{ inputs.daily_filter }}
+          IN_RISK: ${{ inputs.risk }}
+          IN_SESSION: ${{ inputs.session }}
+          IN_SYMBOLS: ${{ inputs.symbols }}
+        run: python scripts/apply_settings.py
+
+      - name: Run one paper pass
         env:
           PYTHONPATH: src
         run: |
           python -m pattern_scout.cli paper-crypto \
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
-            --daily-filter "${{ (github.event_name == 'workflow_dispatch' && inputs.daily_filter) || 'keep' }}" \
-            --symbols ETHUSDT \
+            --symbols ETHUSDT,BTCUSDT,SOLUSDT \
             --exchange "binancevision,bitget" \
             --config config.crypto.json \
+            --settings bot_settings.json \
             --lookback-days 20 \
             --out docs \
             --cumulative reports/crypto_ci/cumulative.json
@@ -67,7 +96,7 @@ jobs:
         run: |
           git config user.name "pattern-scout-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add reports/crypto_ci/cumulative.json docs/ || true
+          git add reports/crypto_ci/cumulative.json docs/ bot_settings.json || true
           git commit -m "paper: update $(date -u +'%Y-%m-%dT%H:%MZ')" || echo "nothing to commit"
           git push || echo "nothing to push"
 
