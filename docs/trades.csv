@@ -1,1 +1,2 @@
-
+symbol,session,side,signal_type,signal_time,entry_time,exit_time,entry_price,exit_price,stop_price,target_price,quantity,pnl,r_multiple,exit_reason,atr_fraction,status,leverage,margin,liquidation_price,notional,fees,gross_pnl,atr,initial_stop,trail_extreme,breakeven_done
+PAXGUSDT,2026-07-16@13:30,long,power_tower,2026-07-16T13:40:00+00:00,2026-07-16T13:40:00+00:00,2026-07-16T16:19:00+00:00,3988.723365,3986.7290033175,3988.723365,,0.08045706972832696,-0.5454694133399973,0.0,stop,0.39905541020272406,closed,20.0,16.046049695240598,3809.2308135749995,320.92099390481195,0.3850089163876029,-0.16046049695239448,59.39024855711137,3963.8653878607224,4018.79,True
