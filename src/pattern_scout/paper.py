@@ -834,7 +834,13 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
     into a cumulative JSON committed to the repo. Equity is recomputed from the full
     cumulative log, so repeated runs are idempotent and safe to schedule every 5 min.
     """
-    log = on_event or (lambda m: print(m, flush=True))
+    _base_log = on_event or (lambda m: print(m, flush=True))
+    bot_log: list[str] = []
+
+    def log(m):
+        bot_log.append(m)
+        _base_log(m)
+
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     cpath = Path(cumulative_path)
@@ -911,10 +917,11 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         except Exception as exc:  # pragma: no cover - network
             log(f"[{chart_symbol}] 1m chart fetch error: {exc}")
 
-    _write_cumulative_reports(out, closed, open_positions, equity_val, unrealized, config,
-                              chart_symbol=chart_symbol, chart_candles=chart_candles)
     log(f"CI pass complete. Closed: {len(closed)} | open: {len(open_positions)} | "
         f"equity {equity_val:.2f} (incl. unrealized {equity_val + unrealized:.2f})")
+    _write_cumulative_reports(out, closed, open_positions, equity_val, unrealized, config,
+                              chart_symbol=chart_symbol, chart_candles=chart_candles,
+                              bot_log=bot_log[-25:])
     return cumulative
 
 
@@ -922,7 +929,8 @@ def _write_cumulative_reports(out: Path, closed: list, open_positions: list,
                               equity_val: float, unrealized: float,
                               config: PatternScoutConfig,
                               chart_symbol: Optional[str] = None,
-                              chart_candles: Optional[list] = None) -> None:
+                              chart_candles: Optional[list] = None,
+                              bot_log: Optional[list] = None) -> None:
     rows = closed
     pd.DataFrame(rows).to_csv(out / "trades.csv", index=False)
     equity = pd.DataFrame()
@@ -960,6 +968,8 @@ def _write_cumulative_reports(out: Path, closed: list, open_positions: list,
         summary=summary,
         chart_symbol=chart_symbol,
         chart_candles=chart_candles or [],
+        bot_log=bot_log or [],
+        daily_filter=bool(config.daily_context.enabled),
     )
     # GitHub Pages serves index.html at the site root.
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")

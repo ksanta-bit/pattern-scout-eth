@@ -97,6 +97,8 @@ def main() -> None:
                               help="Cumulative trade log persisted across CI runs.")
     paper_crypto.add_argument("--lookback-days", type=int, default=4, help="CI: sessions to replay each pass.")
     paper_crypto.add_argument("--reset", action="store_true", help="Wipe the cumulative state (restart from starting capital).")
+    paper_crypto.add_argument("--daily-filter", choices=["keep", "on", "off"], default="keep",
+                              help="Override the daily breakout/retest filter for this run.")
 
     optimize = sub.add_parser(
         "optimize",
@@ -204,6 +206,10 @@ def run_paper_crypto(args: argparse.Namespace) -> None:
     if not symbols:
         print("No symbols provided.", file=sys.stderr)
         raise SystemExit(2)
+
+    if args.daily_filter != "keep":
+        config.daily_context.enabled = (args.daily_filter == "on")
+        print(f"Filtro daily forzato: {'ATTIVO' if config.daily_context.enabled else 'DISATTIVO'}")
 
     if args.reset:
         for pth in [Path(args.cumulative), Path(args.state)]:

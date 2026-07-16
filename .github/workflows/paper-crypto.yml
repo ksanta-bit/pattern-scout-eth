@@ -17,6 +17,11 @@ on:
         description: "Azzera lo storico e riparti da 100 USDT"
         type: boolean
         default: false
+      daily_filter:
+        description: "Filtro daily (breakout+retest)"
+        type: choice
+        options: ["keep", "on", "off"]
+        default: "keep"
 
 concurrency:
   group: paper-crypto
@@ -50,6 +55,7 @@ jobs:
           python -m pattern_scout.cli paper-crypto \
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
+            --daily-filter "${{ (github.event_name == 'workflow_dispatch' && inputs.daily_filter) || 'keep' }}" \
             --symbols ETHUSDT \
             --exchange "bitget,binancevision" \
             --config config.crypto.json \

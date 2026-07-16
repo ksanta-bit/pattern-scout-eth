@@ -465,10 +465,11 @@ def _render_dashboard(payload: dict) -> str:
 def build_crypto_dashboard(output_path: str | Path, starting_capital: float, equity: float,
                            unrealized: float, closed: list, open_positions: list,
                            summary: dict, chart_symbol: str | None = None,
-                           chart_candles: list | None = None) -> Path:
+                           chart_candles: list | None = None, bot_log: list | None = None,
+                           daily_filter: bool = False) -> Path:
     """Interactive paper dashboard: 1-minute candlestick chart with entry/stop/target
     lines for active positions, reset button, open-positions log with live profit,
-    and closed-trades log with net PnL."""
+    closed-trades log with net PnL, plus a bot log and the daily-filter status."""
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     payload = _json_safe({
@@ -481,6 +482,8 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float, equ
         "summary": summary,
         "chart_symbol": chart_symbol or "",
         "candles": chart_candles or [],
+        "bot_log": bot_log or [],
+        "daily_filter": bool(daily_filter),
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
     return output
@@ -537,7 +540,8 @@ def _render_crypto(payload: dict) -> str:
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head><body><main>
  <header>
-   <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1></div>
+   <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1>
+     <div class="sub" id="filterStatus"></div></div>
    <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
  </header>
  <div class="sub" id="updated"></div>
@@ -564,10 +568,15 @@ def _render_crypto(payload: dict) -> str:
    <th>Sessione</th><th>Simbolo</th><th>Segnale</th><th>Entry</th><th>Exit</th>
    <th>Lordo</th><th>Fee</th><th>PnL netto</th><th>R</th><th>Uscita</th></tr></thead>
    <tbody id="closedRows"></tbody></table></div>
+ <h2>Log del bot <span class="sub">(ultimo giro)</span></h2>
+ <pre id="botLog" style="background:var(--card);border:1px solid var(--border);border-radius:10px;
+   padding:12px;overflow:auto;max-height:220px;font-size:12px;white-space:pre-wrap;margin:0"></pre>
  <div class="sub" style="margin-top:14px">
    Il pulsante ripristina il capitale <em>visualizzato</em> a 100 USDT da questo momento (baseline locale).
    Per azzerare davvero lo storico sul server: esegui <code>paper-crypto --reset</code> in locale
    oppure lancia il workflow GitHub con l'opzione <code>reset</code>.
+   Il <strong>filtro daily</strong> (breakout+retest) si attiva/disattiva col workflow (input
+   <code>daily_filter</code>) o cambiando <code>daily_context.enabled</code> in <code>config.crypto.json</code>.
  </div>
 </main>
 <script id="payload" type="application/json">__PAYLOAD__</script>
@@ -581,6 +590,13 @@ def _render_crypto(payload: dict) -> str:
  const closed=(p.closed||[]);
  const opens=(p.open||[]);
  document.getElementById('updated').textContent='Ultimo aggiornamento: '+(p.summary&&p.summary.updated||new Date().toLocaleString('it-IT'));
+ // Daily-context filter status
+ (function(){const fs=document.getElementById('filterStatus');if(fs)
+   fs.innerHTML='Filtro daily (breakout+retest): <strong style="color:'+(p.daily_filter?'var(--good)':'var(--muted)')+'">'+(p.daily_filter?'ATTIVO':'DISATTIVO')+'</strong>';})();
+ // Bot log (what the strategy decided on the last run)
+ (function(){const bl=document.getElementById('botLog');if(bl){
+   const lines=(p.bot_log||[]);
+   bl.textContent=lines.length?lines.join('\\n'):'Nessun evento nell\\'ultimo giro (in attesa di dati o di un setup).';}})();
 
  function baseline(){const v=localStorage.getItem(KEY);return v?JSON.parse(v):{count:0,capital:cap};}
  function applyBaseline(){
@@ -719,15 +735,17 @@ def _render_crypto(payload: dict) -> str:
    const lg2=document.getElementById('legend');
    if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>');
 
-   if(seeded){drawPositions();drawDailyHL();chart.timeScale().fitContent();}
+   // positions + daily lines are drawn by the first tick() (avoids duplicates)
    new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
 
    // --- Live data: Bitget first (your trading venue), Binance.vision as fallback ---
+   // We always redraw a CONTIGUOUS series (deduped + sorted) so there are never gaps,
+   // and on a long gap (browser reopened next day) we reload a fresh window.
    function mergeBars(bars){
-     bars.forEach(b=>{
-       if(allBars.length&&b.time===allBars[allBars.length-1].time)allBars[allBars.length-1]=b;
-       else if(!allBars.length||b.time>allBars[allBars.length-1].time)allBars.push(b);
-     });
+     const m=new Map(allBars.map(b=>[b.time,b]));
+     bars.forEach(b=>m.set(b.time,b));
+     allBars=Array.from(m.values()).sort((a,b)=>a.time-b.time);
+     if(allBars.length>720)allBars=allBars.slice(allBars.length-720);
    }
    async function fetchBars(limit){
      try{
@@ -742,19 +760,22 @@ def _render_crypto(payload: dict) -> str:
      }
      return null;
    }
+   let posDrawn=false;
    async function tick(){
-     const bars=await fetchBars(seeded?3:300);
+     const nowS=Math.floor(Date.now()/1000);
+     const gap=seeded?(nowS-lastTime):1e9;
+     const bigGap=gap>3600;                                   // > 1h -> reload fresh
+     const need=(!seeded||bigGap)?400:Math.min(1000,Math.max(3,Math.ceil(gap/60)+3));
+     const bars=await fetchBars(need);
      if(!bars||!bars.length)return;
-     if(!seeded){
-       series.setData(bars);seeded=true;allBars=bars.slice();lastTime=bars[bars.length-1].time;
-       const w=document.getElementById('chartWait');if(w)w.remove();
-       drawPositions();drawDailyHL();chart.timeScale().fitContent();
-     }else{
-       bars.forEach(b=>{if(b.time>=lastTime){series.update(b);lastTime=b.time;}});
-       mergeBars(bars);growOpenLines();drawDailyHL();
-     }
-     const last=bars[bars.length-1];
-     if(last)document.getElementById('updated').textContent=
+     if(!seeded||bigGap)allBars=bars.slice(); else mergeBars(bars);
+     series.setData(allBars);                                 // contiguous, no fragments
+     lastTime=allBars[allBars.length-1].time;
+     if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();chart.timeScale().fitContent();}
+     if(!posDrawn){drawPositions();posDrawn=true;}
+     growOpenLines();drawDailyHL();
+     const last=allBars[allBars.length-1];
+     document.getElementById('updated').textContent=
        'Prezzo live '+sym+' (Bitget): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2})+
        ' · '+tHM.format(Date.now());
    }
