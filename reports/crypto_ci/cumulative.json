@@ -2,13 +2,79 @@
   "variants": {
     "off": {
       "trades": {},
-      "open": {}
+      "open": {
+        "ETHUSDT:2026-07-16@08:00:power_tower": {
+          "symbol": "ETHUSDT",
+          "session": "2026-07-16@08:00",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-16T08:20:00+00:00",
+          "entry_time": "2026-07-16T08:20:00+00:00",
+          "exit_time": null,
+          "entry_price": 1883.3111849999998,
+          "exit_price": null,
+          "stop_price": 1855.5488189207128,
+          "target_price": null,
+          "quantity": 0.0720399692983001,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.38425975604148754,
+          "status": "open",
+          "leverage": 20.0,
+          "margin": 6.783683997327259,
+          "liquidation_price": 1798.5621816749997,
+          "notional": 135.67367994654518,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 74.79315631714768,
+          "initial_stop": 1855.5488189207128,
+          "trail_extreme": 1896.51,
+          "breakeven_done": false,
+          "current_price": 1882.55,
+          "unrealized_pnl": -0.054835744030315124,
+          "unrealized_r": -0.027417872015157562
+        }
+      }
     },
     "on": {
       "trades": {},
-      "open": {}
+      "open": {
+        "ETHUSDT:2026-07-16@08:00:power_tower": {
+          "symbol": "ETHUSDT",
+          "session": "2026-07-16@08:00",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-16T08:20:00+00:00",
+          "entry_time": "2026-07-16T08:20:00+00:00",
+          "exit_time": null,
+          "entry_price": 1883.3111849999998,
+          "exit_price": null,
+          "stop_price": 1855.5488189207128,
+          "target_price": null,
+          "quantity": 0.0720399692983001,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.38425975604148754,
+          "status": "open",
+          "leverage": 20.0,
+          "margin": 6.783683997327259,
+          "liquidation_price": 1798.5621816749997,
+          "notional": 135.67367994654518,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 74.79315631714768,
+          "initial_stop": 1855.5488189207128,
+          "trail_extreme": 1896.51,
+          "breakeven_done": false,
+          "current_price": 1882.55,
+          "unrealized_pnl": -0.054835744030315124,
+          "unrealized_r": -0.027417872015157562
+        }
+      }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-16T12:09:35"
+  "updated": "2026-07-16T12:32:28"
 }
