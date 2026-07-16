@@ -953,6 +953,9 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
             eng = trader.engines.get(sym)
             last_price = float(eng._rows[-1]["close"]) if (eng and eng._rows) else None
             for _, t in trader.broker.open_positions.items():
+                key = f"{sym}:{t.session}:{t.signal_type}"
+                if key in trades_v:  # already realised earlier -> never show it as open too
+                    continue
                 d = t.to_dict()
                 if last_price is not None:
                     d["current_price"] = last_price

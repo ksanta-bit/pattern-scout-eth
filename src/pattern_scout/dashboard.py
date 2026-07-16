@@ -559,7 +559,8 @@ def _render_crypto(payload: dict) -> str:
        <option value="on">Attivo</option></select></label>
      <label>Rischio/trade<br><select id="set_risk">
        <option value="keep">— invariato —</option><option value="0.005">0,5%</option>
-       <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03">3%</option></select></label>
+       <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03">3%</option>
+       <option value="0.05">5%</option><option value="0.10">10% (aggressivo)</option></select></label>
      <label>Sessioni<br><select id="set_sess">
        <option value="keep">— invariate —</option><option value="daily">24h (00:00)</option>
        <option value="three">3 sessioni (00/08/13:30)</option><option value="us">US (13:30)</option></select></label>

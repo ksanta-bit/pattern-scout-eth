@@ -58,11 +58,11 @@
     "breakeven_trigger_r": 1.0,
     "trail_trigger_r": 1.0,
     "trail_atr_fraction": 0.6,
-    "use_fixed_target": true
+    "use_fixed_target": false
   },
   "risk": {
     "account_size": 100.0,
-    "risk_fraction": 0.02,
+    "risk_fraction": 0.10,
     "fixed_quantity": null,
     "point_value": 1.0,
     "leverage": 20.0,

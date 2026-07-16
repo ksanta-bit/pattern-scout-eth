@@ -30,7 +30,7 @@ on:
       risk:
         description: "Rischio per trade"
         type: choice
-        options: ["keep", "0.005", "0.01", "0.02", "0.03"]
+        options: ["keep", "0.005", "0.01", "0.02", "0.03", "0.05", "0.10"]
         default: "keep"
       session:
         description: "Sessioni (ancoraggi)"
