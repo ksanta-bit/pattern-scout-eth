@@ -90,9 +90,9 @@
           "initial_stop": 1859.330635883915,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1879.31,
-          "unrealized_pnl": -1.585291750812158,
-          "unrealized_r": -0.16685126685927623
+          "current_price": 1878.76,
+          "unrealized_pnl": -1.8032048098050932,
+          "unrealized_r": -0.18978652148324332
         },
         "DOGEUSDT:2026-07-16@08:00:power_tower": {
           "symbol": "DOGEUSDT",
@@ -122,9 +122,9 @@
           "initial_stop": 0.0719839257627603,
           "trail_extreme": 0.07397,
           "breakeven_done": false,
-          "current_price": 0.07323,
-          "unrealized_pnl": -0.27121723183024,
-          "unrealized_r": -0.028545495617294483
+          "current_price": 0.07316,
+          "unrealized_pnl": -0.7897262097936273,
+          "unrealized_r": -0.08311833989455635
         }
       }
     },
@@ -159,13 +159,13 @@
           "initial_stop": 1859.330635883915,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1879.31,
-          "unrealized_pnl": -1.6685126685927623,
-          "unrealized_r": -0.16685126685927623
+          "current_price": 1878.76,
+          "unrealized_pnl": -1.897865214832433,
+          "unrealized_r": -0.18978652148324332
         }
       }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-16T21:49:32"
+  "updated": "2026-07-16T21:57:29"
 }
