@@ -1,8 +1,14 @@
 {
-  "trades": {},
-  "open": {},
+  "variants": {
+    "off": {
+      "trades": {},
+      "open": {}
+    },
+    "on": {
+      "trades": {},
+      "open": {}
+    }
+  },
   "starting_capital": 100.0,
-  "equity": 100.0,
-  "equity_incl_unrealized": 100.0,
-  "updated": "2026-07-16T07:53:30"
+  "updated": "2026-07-16T12:03:26"
 }
