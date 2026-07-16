@@ -74,25 +74,25 @@
           "exit_price": null,
           "stop_price": 1859.330635883915,
           "target_price": null,
-          "quantity": 0.41700462952670886,
+          "quantity": 0.3962055618053695,
           "pnl": null,
           "r_multiple": null,
           "exit_reason": null,
           "atr_fraction": 0.48168225999311176,
           "status": "open",
           "leverage": 20.0,
-          "margin": 39.2674741492216,
+          "margin": 37.30891830536305,
           "liquidation_price": 1798.5621816749997,
-          "notional": 785.3494829844319,
+          "notional": 746.178366107261,
           "fees": null,
           "gross_pnl": null,
           "atr": 59.665888464339545,
           "initial_stop": 1859.330635883915,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1878.71,
-          "unrealized_pnl": -1.9187154463087495,
-          "unrealized_r": -0.19187154463087494
+          "current_price": 1879.31,
+          "unrealized_pnl": -1.585291750812158,
+          "unrealized_r": -0.16685126685927623
         },
         "DOGEUSDT:2026-07-16@08:00:power_tower": {
           "symbol": "DOGEUSDT",
@@ -106,16 +106,16 @@
           "exit_price": null,
           "stop_price": 0.0719839257627603,
           "target_price": null,
-          "quantity": 7796.120611037339,
+          "quantity": 7407.27111376261,
           "pnl": null,
           "r_multiple": null,
           "exit_reason": null,
           "atr_fraction": 0.3738030507701594,
           "status": "open",
           "leverage": 20.0,
-          "margin": 28.55976836512186,
+          "margin": 27.135284044633313,
           "liquidation_price": 0.06996961732499998,
-          "notional": 571.1953673024373,
+          "notional": 542.7056808926662,
           "fees": null,
           "gross_pnl": null,
           "atr": 0.0023809329489588274,
@@ -123,8 +123,8 @@
           "trail_extreme": 0.07397,
           "breakeven_done": false,
           "current_price": 0.07323,
-          "unrealized_pnl": -0.2854549561729448,
-          "unrealized_r": -0.02854549561729448
+          "unrealized_pnl": -0.27121723183024,
+          "unrealized_r": -0.028545495617294483
         }
       }
     },
@@ -159,13 +159,13 @@
           "initial_stop": 1859.330635883915,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1878.71,
-          "unrealized_pnl": -1.9187154463087495,
-          "unrealized_r": -0.19187154463087494
+          "current_price": 1879.31,
+          "unrealized_pnl": -1.6685126685927623,
+          "unrealized_r": -0.16685126685927623
         }
       }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-16T21:44:58"
+  "updated": "2026-07-16T21:49:32"
 }
