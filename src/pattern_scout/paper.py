@@ -313,6 +313,21 @@ class SymbolEngine:
     def _is_session_close(self, ts: pd.Timestamp) -> bool:
         return ts.time() >= self.session_close
 
+    def _in_any_window(self, ts: pd.Timestamp) -> bool:
+        """True if the bar is inside a session window (single or multi-anchor).
+        Used to skip the expensive annotate step for bars where nothing can happen."""
+        minutes = ts.hour * 60 + ts.minute
+        anchors = getattr(self.config, "session_anchors", None)
+        if anchors:
+            w = int(self.config.session_window_minutes)
+            for a in anchors:
+                am = parse_clock(a).hour * 60 + parse_clock(a).minute
+                if am <= minutes < am + w:
+                    return True
+            return False
+        so = parse_clock(self.config.session_open)
+        return so <= ts.time() <= self.session_close
+
     def _reset_session(self, date_str: str, session_id: Optional[str] = None) -> None:
         self.state = SymbolState(session_date=date_str, session_id=session_id, phase="collecting")
 
@@ -356,6 +371,11 @@ class SymbolEngine:
                 self._manage_position(row)
             else:
                 self._poll_live_exit(row)
+            return
+
+        # Fast path: when flat and outside every session window, nothing can trigger —
+        # skip the costly annotate (huge speedup with multiple symbols and multi-session).
+        if not self._in_any_window(ts):
             return
 
         # Build the annotated frame and find which session window this bar belongs to.

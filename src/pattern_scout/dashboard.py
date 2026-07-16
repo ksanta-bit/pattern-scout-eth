@@ -568,6 +568,9 @@ def _render_crypto(payload: dict) -> str:
        <label style="font-weight:400"><input type="checkbox" class="set_sym" value="ETHUSDT"> ETH</label>
        <label style="font-weight:400"><input type="checkbox" class="set_sym" value="BTCUSDT"> BTC</label>
        <label style="font-weight:400"><input type="checkbox" class="set_sym" value="SOLUSDT"> SOL</label>
+       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="DOGEUSDT"> DOGE</label>
+       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="BNBUSDT"> BNB</label>
+       <label style="font-weight:400" title="Oro tokenizzato: scorrelato da BTC"><input type="checkbox" class="set_sym" value="PAXGUSDT"> Oro (PAXG)</label>
        </span></label>
      <label style="display:flex;align-items:end;gap:6px"><input type="checkbox" id="set_reset"> Azzera a 100 USDT</label>
    </div>
@@ -681,9 +684,24 @@ def _render_crypto(payload: dict) -> str:
       <td><span class="pill ${t.exit_reason||''}">${t.exit_reason||''}</span></td></tr>`).join('')
       ||'<tr><td colspan="10" class="empty">Nessuna operazione chiusa dal reset.</td></tr>';
  }
- document.getElementById('resetBtn').addEventListener('click',()=>{
+ document.getElementById('resetBtn').addEventListener('click',async()=>{
+   // 1) Reset the displayed capital to 100 immediately (client-side baseline).
    localStorage.setItem(baseKey(),JSON.stringify({count:closed.length,capital:cap}));
    applyBaseline();
+   const upd=document.getElementById('updated');
+   const repo=p.repo||'', tok=localStorage.getItem('ps_ghtoken')||'';
+   // 2) If a GitHub token is saved, also wipe the real history on the server.
+   if(repo&&tok){
+     upd.textContent='Invio reset totale al bot…';
+     try{
+       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/paper-crypto.yml/dispatches',{
+         method:'POST',headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+         body:JSON.stringify({ref:'main',inputs:{reset:'true'}})});
+       upd.textContent=(r.status===204)?'✓ Reset totale inviato: storico azzerato a 100 USDT (~1-2 min, poi ricarica).':('Vista azzerata a 100. Errore server '+r.status);
+     }catch(e){upd.textContent='Vista azzerata a 100 USDT (server non raggiungibile).';}
+   }else{
+     upd.textContent='✓ Capitale visualizzato riportato a 100 USDT. Per azzerare anche lo storico sul server, inserisci il token nelle ⚙ Impostazioni.';
+   }
  });
  document.getElementById('filterToggle').addEventListener('click',()=>{
    cur=(cur==='on')?'off':'on';
