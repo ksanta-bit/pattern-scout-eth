@@ -466,7 +466,8 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
                            variants: dict, default_variant: str = "off",
                            chart_symbol: str | None = None,
                            chart_candles: list | None = None, bot_log: list | None = None,
-                           leverage: float = 1.0, repo: str = "", symbols: list | None = None) -> Path:
+                           leverage: float = 1.0, repo: str = "", symbols: list | None = None,
+                           candles_by_symbol: dict | None = None) -> Path:
     """Interactive paper dashboard with a toggle button that switches between the
     two strategy variants (daily filter OFF / ON): 1-minute candlestick chart with
     entry/stop/target segments, reset button, open/closed logs and a bot log."""
@@ -483,6 +484,7 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
         "leverage": leverage,
         "repo": repo or "",
         "symbols": symbols or ([chart_symbol] if chart_symbol else []),
+        "candles_by_symbol": candles_by_symbol or {},
         "updated": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
@@ -929,14 +931,23 @@ def _render_crypto(payload: dict) -> str:
    tick(); setInterval(tick,60000);
 
    // Switch the displayed symbol (data-only; all symbols keep trading server-side).
+   const byS=p.candles_by_symbol||{};
    if(symSel){symSel.addEventListener('change',()=>{
      sym=symSel.value; setTitle();
-     seeded=false; allBars=[]; lastTime=0; candles=[];
-     series.setData([]);
-     if(window.__redrawPositions)window.__redrawPositions();
+     lastTime=0; posDrawn=false;
      if(dhi)dhi.setData([]); if(dlo)dlo.setData([]);
-     posDrawn=false;
-     el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico '+sym+'…</div>');
+     if(window.__redrawPositions)window.__redrawPositions();
+     const emb=byS[sym]||[];
+     if(emb.length){
+       // Show the embedded candles for this symbol immediately, then live-update.
+       allBars=emb.slice(); seeded=true; series.setData(allBars);
+       lastTime=allBars[allBars.length-1].time;
+       const w=document.getElementById('chartWait'); if(w)w.remove();
+       posDrawn=true; drawPositions(); drawDailyHL(); chart.timeScale().fitContent();
+     }else{
+       allBars=[]; seeded=false; candles=[]; series.setData([]);
+       el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico '+sym+'…</div>');
+     }
      tick();
    });}
  })();

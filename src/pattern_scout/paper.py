@@ -981,19 +981,22 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
     cpath.parent.mkdir(parents=True, exist_ok=True)
     cpath.write_text(json.dumps(cumulative, indent=2), encoding="utf-8")
 
-    # 1-minute chart candles (primary symbol).
+    # 1-minute chart candles for EVERY symbol, so switching the chart always shows
+    # data immediately (no reliance on a live browser fetch that might be blocked).
     chart_symbol = symbols[0] if symbols else None
-    chart_candles = []
-    if chart_symbol is not None:
+    candles_by_symbol = {}
+    for s in symbols:
         try:
-            raw = feed.get_klines(chart_symbol, "1m", limit=300)
-            chart_candles = [
+            raw = feed.get_klines(s, "1m", limit=300)
+            candles_by_symbol[s] = [
                 {"time": int(b["timestamp"].value // 1_000_000_000),
                  "open": b["open"], "high": b["high"], "low": b["low"], "close": b["close"]}
                 for b in raw
             ]
         except Exception as exc:  # pragma: no cover - network
-            log(f"[{chart_symbol}] 1m chart fetch error: {exc}")
+            log(f"[{s}] 1m chart fetch error: {exc}")
+            candles_by_symbol[s] = []
+    chart_candles = candles_by_symbol.get(chart_symbol, [])
 
     default_variant = "on" if config.daily_context.enabled else "off"
     d = variant_summaries[default_variant]
@@ -1001,7 +1004,8 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         f"open: {len(d['open'])} | equity {d['equity']:.2f}")
     _write_cumulative_reports(out, variant_summaries, default_variant, config,
                               chart_symbol=chart_symbol, chart_candles=chart_candles,
-                              bot_log=bot_log[-25:], symbols=list(symbols))
+                              bot_log=bot_log[-25:], symbols=list(symbols),
+                              candles_by_symbol=candles_by_symbol)
     return cumulative
 
 
@@ -1029,7 +1033,8 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
                               chart_symbol: Optional[str] = None,
                               chart_candles: Optional[list] = None,
                               bot_log: Optional[list] = None,
-                              symbols: Optional[list] = None) -> None:
+                              symbols: Optional[list] = None,
+                              candles_by_symbol: Optional[dict] = None) -> None:
     starting = float(config.risk.account_size)
     dv = variant_summaries[default_variant]
     rows = dv["closed"]
@@ -1057,6 +1062,7 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
         leverage=float(config.risk.leverage),
         repo=os.environ.get("GITHUB_REPOSITORY", ""),
         symbols=symbols or ([chart_symbol] if chart_symbol else []),
+        candles_by_symbol=candles_by_symbol or {},
     )
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")
 
