@@ -844,134 +844,151 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     cpath = Path(cumulative_path)
-    cumulative: dict = {"trades": {}}
+    cumulative: dict = {"variants": {"off": {"trades": {}, "open": {}},
+                                     "on": {"trades": {}, "open": {}}}}
     if cpath.exists():
         try:
-            cumulative = json.loads(cpath.read_text(encoding="utf-8"))
-            cumulative.setdefault("trades", {})
+            loaded = json.loads(cpath.read_text(encoding="utf-8"))
+            if "variants" in loaded:
+                cumulative = loaded
+            elif loaded.get("trades"):   # migrate old single-variant format
+                key = "on" if config.daily_context.enabled else "off"
+                cumulative["variants"][key] = {"trades": loaded.get("trades", {}),
+                                               "open": loaded.get("open", {})}
         except Exception:
-            cumulative = {"trades": {}}
+            pass
+    cumulative.setdefault("variants", {"off": {"trades": {}, "open": {}},
+                                       "on": {"trades": {}, "open": {}}})
 
-    # Shared feed (used both for the strategy and to pull 1-minute chart candles).
+    # Shared feed (strategy + 1-minute chart candles).
     if feed is None:
         from .crypto import make_feed
         feed = make_feed(exchange, interval)
 
+    # Shared 1-minute candles (for precise intrabar stop/target and the chart).
+    minute_bars = {}
     for sym in symbols:
-        # 1-minute candles (last 2 days) so stop/target are sequenced precisely intrabar.
-        minute_bars = {}
         try:
             minute_bars[sym] = feed.history(sym, "1m", days=2)
         except Exception as exc:  # pragma: no cover - network
             log(f"[{sym}] 1m history error: {exc}")
-        # Warmup replays the lookback window and processes the latest session's bars;
-        # the returned trader holds the resulting simulated trades for that window.
-        trader = run_crypto_paper(config, [sym], exchange=exchange, interval=interval,
-                                  warmup_days=lookback_days, feed=feed, max_iterations=1,
-                                  sleep=False, on_event=log, minute_bars_by_symbol=minute_bars)
-        for t in trader.broker.trades:
-            cumulative["trades"][f"{sym}:{t.session}:{t.signal_type}"] = t.to_dict()
-        # Mark any still-open position to the latest price for a live unrealized PnL.
-        eng = trader.engines.get(sym)
-        last_price = float(eng._rows[-1]["close"]) if (eng and eng._rows) else None
-        opens = {k: v for k, v in list(cumulative.get("open", {}).items()) if not k.startswith(f"{sym}:")}
-        cumulative["open"] = opens
-        for _, t in trader.broker.open_positions.items():
-            d = t.to_dict()
-            if last_price is not None:
-                d["current_price"] = last_price
-                pv = config.risk.point_value
-                per = (last_price - t.entry_price) if t.side == "long" else (t.entry_price - last_price)
-                d["unrealized_pnl"] = float(per * t.quantity * pv)
-                d["unrealized_r"] = float(
-                    d["unrealized_pnl"] / (abs(t.entry_price - t.stop_price) * t.quantity * pv)
-                ) if (t.entry_price != t.stop_price) else 0.0
-            cumulative["open"][f"{sym}:{t.session}:{t.signal_type}"] = d
 
-    # Recompute cumulative equity + reports from the merged log.
-    trades = list(cumulative["trades"].values())
-    closed = [t for t in trades if t.get("status") == "closed"]
-    closed.sort(key=lambda t: t.get("exit_time") or t.get("entry_time") or "")
-    open_positions = list(cumulative.get("open", {}).values())
-    realized = sum(float(t.get("pnl") or 0.0) for t in closed)
-    unrealized = sum(float(t.get("unrealized_pnl") or 0.0) for t in open_positions)
-    equity_val = float(config.risk.account_size) + realized
+    import copy
+    variant_summaries = {}
+    for vkey, enabled in [("off", False), ("on", True)]:
+        cfg_v = copy.deepcopy(config)
+        cfg_v.daily_context.enabled = enabled
+        prev = cumulative["variants"].get(vkey, {"trades": {}, "open": {}})
+        trades_v = dict(prev.get("trades", {}))
+        open_v = {}
+        for sym in symbols:
+            trader = run_crypto_paper(cfg_v, [sym], interval=interval, warmup_days=lookback_days,
+                                      feed=feed, max_iterations=1, sleep=False,
+                                      on_event=(log if vkey == ("on" if config.daily_context.enabled else "off") else _base_log),
+                                      minute_bars_by_symbol=minute_bars)
+            for t in trader.broker.trades:
+                trades_v[f"{sym}:{t.session}:{t.signal_type}"] = t.to_dict()
+            eng = trader.engines.get(sym)
+            last_price = float(eng._rows[-1]["close"]) if (eng and eng._rows) else None
+            for _, t in trader.broker.open_positions.items():
+                d = t.to_dict()
+                if last_price is not None:
+                    d["current_price"] = last_price
+                    pv = cfg_v.risk.point_value
+                    per = (last_price - t.entry_price) if t.side == "long" else (t.entry_price - last_price)
+                    d["unrealized_pnl"] = float(per * t.quantity * pv)
+                    d["unrealized_r"] = float(
+                        d["unrealized_pnl"] / (abs(t.entry_price - t.stop_price) * t.quantity * pv)
+                    ) if (t.entry_price != t.stop_price) else 0.0
+                open_v[f"{sym}:{t.session}:{t.signal_type}"] = d
+        cumulative["variants"][vkey] = {"trades": trades_v, "open": open_v}
+
+        closed = [t for t in trades_v.values() if t.get("status") == "closed"]
+        closed.sort(key=lambda t: t.get("exit_time") or t.get("entry_time") or "")
+        open_positions = list(open_v.values())
+        realized = sum(float(t.get("pnl") or 0.0) for t in closed)
+        unrealized = sum(float(t.get("unrealized_pnl") or 0.0) for t in open_positions)
+        variant_summaries[vkey] = _variant_report(closed, open_positions, realized, unrealized,
+                                                   float(config.risk.account_size))
+
     cumulative["starting_capital"] = float(config.risk.account_size)
-    cumulative["equity"] = equity_val
-    cumulative["equity_incl_unrealized"] = equity_val + unrealized
     cumulative["updated"] = datetime.now(tz=None).isoformat(timespec="seconds")
     cpath.parent.mkdir(parents=True, exist_ok=True)
     cpath.write_text(json.dumps(cumulative, indent=2), encoding="utf-8")
 
-    # 1-minute candles for the chart (primary symbol).
+    # 1-minute chart candles (primary symbol).
     chart_symbol = symbols[0] if symbols else None
     chart_candles = []
     if chart_symbol is not None:
         try:
             raw = feed.get_klines(chart_symbol, "1m", limit=300)
             chart_candles = [
-                {"time": int(b["timestamp"].value // 1_000_000_000),  # epoch seconds (UTC)
+                {"time": int(b["timestamp"].value // 1_000_000_000),
                  "open": b["open"], "high": b["high"], "low": b["low"], "close": b["close"]}
                 for b in raw
             ]
         except Exception as exc:  # pragma: no cover - network
             log(f"[{chart_symbol}] 1m chart fetch error: {exc}")
 
-    log(f"CI pass complete. Closed: {len(closed)} | open: {len(open_positions)} | "
-        f"equity {equity_val:.2f} (incl. unrealized {equity_val + unrealized:.2f})")
-    _write_cumulative_reports(out, closed, open_positions, equity_val, unrealized, config,
+    default_variant = "on" if config.daily_context.enabled else "off"
+    d = variant_summaries[default_variant]
+    log(f"CI pass complete [{default_variant}]. Closed: {len(d['closed'])} | "
+        f"open: {len(d['open'])} | equity {d['equity']:.2f}")
+    _write_cumulative_reports(out, variant_summaries, default_variant, config,
                               chart_symbol=chart_symbol, chart_candles=chart_candles,
                               bot_log=bot_log[-25:])
     return cumulative
 
 
-def _write_cumulative_reports(out: Path, closed: list, open_positions: list,
-                              equity_val: float, unrealized: float,
+def _variant_report(closed, open_positions, realized, unrealized, starting):
+    pnls = [float(t.get("pnl") or 0.0) for t in closed]
+    wins = [p for p in pnls if p > 0]
+    losses = [p for p in pnls if p < 0]
+    gl = abs(sum(losses))
+    summary = {
+        "total_trades": len(closed),
+        "wins": len(wins),
+        "losses": len(losses),
+        "win_rate": (len(wins) / len(pnls)) if pnls else 0.0,
+        "total_pnl": sum(pnls),
+        "avg_r": (sum(float(t.get("r_multiple") or 0.0) for t in closed) / len(closed)) if closed else 0.0,
+        "profit_factor": (sum(wins) / gl) if gl else (float("inf") if wins else 0.0),
+    }
+    return {"closed": closed, "open": open_positions, "equity": starting + realized,
+            "unrealized": unrealized, "equity_incl_unrealized": starting + realized + unrealized,
+            "summary": summary}
+
+
+def _write_cumulative_reports(out: Path, variant_summaries: dict, default_variant: str,
                               config: PatternScoutConfig,
                               chart_symbol: Optional[str] = None,
                               chart_candles: Optional[list] = None,
                               bot_log: Optional[list] = None) -> None:
-    rows = closed
+    starting = float(config.risk.account_size)
+    dv = variant_summaries[default_variant]
+    rows = dv["closed"]
+    # CSV/summary reflect the DEFAULT variant (for external tooling).
     pd.DataFrame(rows).to_csv(out / "trades.csv", index=False)
     equity = pd.DataFrame()
     if rows:
         equity["exit_time"] = [r.get("exit_time") for r in rows]
         equity["pnl"] = [float(r.get("pnl") or 0.0) for r in rows]
-        equity["equity"] = float(config.risk.account_size) + equity["pnl"].cumsum()
+        equity["equity"] = starting + equity["pnl"].cumsum()
     equity.to_csv(out / "equity_curve.csv", index=False)
-    pnls = [float(r.get("pnl") or 0.0) for r in rows]
-    wins = [p for p in pnls if p > 0]
-    losses = [p for p in pnls if p < 0]
-    gl = abs(sum(losses))
-    summary = {
-        "starting_capital": float(config.risk.account_size),
-        "total_trades": len(rows),
-        "wins": len(wins),
-        "losses": len(losses),
-        "win_rate": (len(wins) / len(pnls)) if pnls else 0.0,
-        "total_pnl": sum(pnls),
-        "avg_r": (sum(float(r.get("r_multiple") or 0.0) for r in rows) / len(rows)) if rows else 0.0,
-        "profit_factor": (sum(wins) / gl) if gl else (float("inf") if wins else 0.0),
-        "ending_equity": equity_val,
-        "equity_incl_unrealized": equity_val + unrealized,
-        "open_positions": len(open_positions),
-    }
-    pd.Series(summary, dtype="object").to_json(out / "summary.json", indent=2)
+    summ = dict(dv["summary"]); summ["starting_capital"] = starting
+    summ["ending_equity"] = dv["equity"]; summ["open_positions"] = len(dv["open"])
+    pd.Series(summ, dtype="object").to_json(out / "summary.json", indent=2)
+
     from .dashboard import build_crypto_dashboard
     dash = build_crypto_dashboard(
         out / "dashboard.html",
-        starting_capital=float(config.risk.account_size),
-        equity=equity_val,
-        unrealized=unrealized,
-        closed=rows,
-        open_positions=open_positions,
-        summary=summary,
+        starting_capital=starting,
+        variants=variant_summaries,
+        default_variant=default_variant,
         chart_symbol=chart_symbol,
         chart_candles=chart_candles or [],
         bot_log=bot_log or [],
-        daily_filter=bool(config.daily_context.enabled),
     )
-    # GitHub Pages serves index.html at the site root.
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")
 
 

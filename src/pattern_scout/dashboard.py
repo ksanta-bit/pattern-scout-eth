@@ -462,28 +462,24 @@ def _render_dashboard(payload: dict) -> str:
     return html.replace("__PATTERN_SCOUT_PAYLOAD__", data)
 
 
-def build_crypto_dashboard(output_path: str | Path, starting_capital: float, equity: float,
-                           unrealized: float, closed: list, open_positions: list,
-                           summary: dict, chart_symbol: str | None = None,
-                           chart_candles: list | None = None, bot_log: list | None = None,
-                           daily_filter: bool = False) -> Path:
-    """Interactive paper dashboard: 1-minute candlestick chart with entry/stop/target
-    lines for active positions, reset button, open-positions log with live profit,
-    closed-trades log with net PnL, plus a bot log and the daily-filter status."""
+def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
+                           variants: dict, default_variant: str = "off",
+                           chart_symbol: str | None = None,
+                           chart_candles: list | None = None, bot_log: list | None = None) -> Path:
+    """Interactive paper dashboard with a toggle button that switches between the
+    two strategy variants (daily filter OFF / ON): 1-minute candlestick chart with
+    entry/stop/target segments, reset button, open/closed logs and a bot log."""
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
+    import datetime as _dt
     payload = _json_safe({
         "starting_capital": starting_capital,
-        "equity": equity,
-        "unrealized": unrealized,
-        "equity_incl_unrealized": equity + unrealized,
-        "closed": closed,
-        "open": open_positions,
-        "summary": summary,
+        "variants": variants,             # {"off": {...}, "on": {...}}
+        "default_variant": default_variant,
         "chart_symbol": chart_symbol or "",
         "candles": chart_candles or [],
         "bot_log": bot_log or [],
-        "daily_filter": bool(daily_filter),
+        "updated": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
     return output
@@ -542,7 +538,10 @@ def _render_crypto(payload: dict) -> str:
  <header>
    <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1>
      <div class="sub" id="filterStatus"></div></div>
-   <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">
+     <button id="filterToggle" title="Attiva/disattiva il filtro daily (breakout+retest)">Filtro daily: —</button>
+     <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
+   </div>
  </header>
  <div class="sub" id="updated"></div>
  <section class="grid">
@@ -585,20 +584,28 @@ def _render_crypto(payload: dict) -> str:
  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
  const num=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2});
  const q4=new Intl.NumberFormat('it-IT',{maximumFractionDigits:4});
- const KEY='patternscout_eth_baseline';
  const cap=Number(p.starting_capital)||100;
- const closed=(p.closed||[]);
- const opens=(p.open||[]);
- document.getElementById('updated').textContent='Ultimo aggiornamento: '+(p.summary&&p.summary.updated||new Date().toLocaleString('it-IT'));
- // Daily-context filter status
- (function(){const fs=document.getElementById('filterStatus');if(fs)
-   fs.innerHTML='Filtro daily (breakout+retest): <strong style="color:'+(p.daily_filter?'var(--good)':'var(--muted)')+'">'+(p.daily_filter?'ATTIVO':'DISATTIVO')+'</strong>';})();
+ const V=p.variants||{off:{},on:{}};
+ let cur=localStorage.getItem('ps_variant')||(p.default_variant||'off');
+ if(!V[cur])cur=(V.off?'off':'on');
+ let closed=[],opens=[];
+ function loadVariant(){const d=V[cur]||{};closed=(d.closed||[]);opens=(d.open||[]);}
+ loadVariant();
+ document.getElementById('updated').textContent='Ultimo aggiornamento: '+(p.updated||new Date().toLocaleString('it-IT'));
+ function syncFilterUI(){
+   const on=(cur==='on');
+   const btn=document.getElementById('filterToggle');
+   if(btn){btn.textContent='Filtro daily: '+(on?'ATTIVO':'DISATTIVO');btn.style.background=on?'var(--good)':'var(--card)';btn.style.color=on?'#fff':'var(--fg)';}
+   const fs=document.getElementById('filterStatus');
+   if(fs)fs.innerHTML='Vista: <strong>'+(on?'CON filtro daily (breakout+retest)':'SENZA filtro daily — nucleo del video')+'</strong>';
+ }
  // Bot log (what the strategy decided on the last run)
  (function(){const bl=document.getElementById('botLog');if(bl){
    const lines=(p.bot_log||[]);
    bl.textContent=lines.length?lines.join('\\n'):'Nessun evento nell\\'ultimo giro (in attesa di dati o di un setup).';}})();
 
- function baseline(){const v=localStorage.getItem(KEY);return v?JSON.parse(v):{count:0,capital:cap};}
+ function baseKey(){return 'psbase_'+cur;}
+ function baseline(){const v=localStorage.getItem(baseKey());return v?JSON.parse(v):{count:0,capital:cap};}
  function applyBaseline(){
    const b=baseline();
    const shown=closed.slice(b.count);            // trade dopo il reset
@@ -633,9 +640,16 @@ def _render_crypto(payload: dict) -> str:
       ||'<tr><td colspan="10" class="empty">Nessuna operazione chiusa dal reset.</td></tr>';
  }
  document.getElementById('resetBtn').addEventListener('click',()=>{
-   localStorage.setItem(KEY,JSON.stringify({count:closed.length,capital:cap}));
+   localStorage.setItem(baseKey(),JSON.stringify({count:closed.length,capital:cap}));
    applyBaseline();
  });
+ document.getElementById('filterToggle').addEventListener('click',()=>{
+   cur=(cur==='on')?'off':'on';
+   localStorage.setItem('ps_variant',cur);
+   loadVariant();syncFilterUI();applyBaseline();
+   if(window.__redrawPositions)window.__redrawPositions();
+ });
+ syncFilterUI();
  applyBaseline();
 
  // ---- Candlestick chart (1 minute): Bitget source, Italian time, SL/TP as
@@ -674,7 +688,10 @@ def _render_crypto(payload: dict) -> str:
    else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico le candele da Bitget…</div>');
 
    // --- Positions: SL/TP/entry as segments spanning ONLY entry->exit (open: entry->now) ---
-   const openLines=[];   // {series, et, price} to grow while the position is open
+   let openLines=[];        // {series, et, price} to grow while the position is open
+   let posSeriesAll=[];     // all position line series, so we can clear on variant switch
+   function clearPositions(){posSeriesAll.forEach(s=>{try{chart.removeSeries(s);}catch(e){}});posSeriesAll=[];openLines=[];series.setMarkers([]);}
+   window.__redrawPositions=function(){clearPositions();if(seeded)drawPositions();};
    function drawPositions(){
      const markers=[];
      const pos=[].concat(
@@ -696,6 +713,7 @@ def _render_crypto(payload: dict) -> str:
          const ls=chart.addLineSeries({color:color,lineWidth:lw,lineStyle:style,
            priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
          ls.setData([{time:et,value:price},{time:xt,value:price}]);
+         posSeriesAll.push(ls);
          if(t.isOpen&&idx<3)openLines.push({series:ls,et:et,price:price});
        });
        markers.push({time:et,position:isLong?'belowBar':'aboveBar',
@@ -727,11 +745,6 @@ def _render_crypto(payload: dict) -> str:
      dlo.setData([{time:t0,value:lo},{time:t1,value:lo}]);
    }
 
-   // side badges in the legend
-   const openHere=opens.filter(t=>(t.symbol||'')===sym);
-   if(openHere.length){const lg=document.getElementById('legend');
-     openHere.forEach(t=>{const s=document.createElement('span');
-       s.innerHTML=`<span class="side-tag ${t.side}">${(t.side||'').toUpperCase()}</span>`;lg.appendChild(s);});}
    const lg2=document.getElementById('legend');
    if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>');
 
