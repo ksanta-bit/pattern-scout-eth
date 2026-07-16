@@ -66,6 +66,9 @@ class ExecutionConfig:
     # taker 0.06% (0.0006), maker 0.02% (0.0002). Fees are charged on entry and exit.
     taker_fee_pct: float = 0.0
     maker_fee_pct: float = 0.0
+    # Hard cap on how long a position can stay open (minutes). 0 = disabled.
+    # Prevents an intraday scalp from sitting open for many hours.
+    max_hold_minutes: int = 0
 
 
 @dataclass

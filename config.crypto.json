@@ -49,7 +49,8 @@
     "fee_per_share": 0.0,
     "force_exit_at_session_close": true,
     "taker_fee_pct": 0.0006,
-    "maker_fee_pct": 0.0002
+    "maker_fee_pct": 0.0002,
+    "max_hold_minutes": 240
   },
   "exit_management": {
     "mode": "trailing",
@@ -57,7 +58,7 @@
     "breakeven_trigger_r": 1.0,
     "trail_trigger_r": 1.0,
     "trail_atr_fraction": 0.6,
-    "use_fixed_target": false
+    "use_fixed_target": true
   },
   "risk": {
     "account_size": 100.0,

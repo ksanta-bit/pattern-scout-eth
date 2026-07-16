@@ -596,8 +596,14 @@ class SymbolEngine:
             self._update_trailing(trade, row)
             exit_price, reason, exit_ts = self._exit_check(row, trade)
 
+        ex = self.config.execution
+        if exit_price is None and ex.max_hold_minutes and ex.max_hold_minutes > 0:
+            entry_ts = _to_ts(trade.entry_time, self.tz)
+            if (ts - entry_ts).total_seconds() / 60.0 >= ex.max_hold_minutes:
+                exit_price, reason, exit_ts = float(row["close"]), "max_hold", ts
+
         if exit_price is None and (
-            self._is_session_close(ts) and self.config.execution.force_exit_at_session_close
+            self._is_session_close(ts) and ex.force_exit_at_session_close
         ):
             exit_price, reason, exit_ts = float(row["close"]), "session_close", ts
 
