@@ -574,15 +574,22 @@ def _render_crypto(payload: dict) -> str:
        </span></label>
      <label style="display:flex;align-items:end;gap:6px"><input type="checkbox" id="set_reset"> Azzera a 100 USDT</label>
    </div>
-   <div style="margin-top:10px">
-     <label style="font-size:12px;color:var(--muted)">Token GitHub (scope <code>workflow</code>, resta solo nel tuo browser)</label><br>
-     <input type="password" id="ghtok" placeholder="ghp_… o github_pat_…" style="width:100%;max-width:420px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--fg)">
+   <div style="margin-top:12px;padding:10px;border:1px dashed var(--border);border-radius:8px">
+     <div style="font-size:13px;font-weight:600;margin-bottom:6px">Configurazione una tantum (poi non serve più)</div>
+     <div class="sub" style="margin-bottom:8px">Per cambiare le impostazioni dal telefono serve collegare il tuo GitHub <strong>una volta sola</strong>. Il token resta salvato solo in questo browser.</div>
+     <a id="createTok" href="https://github.com/settings/tokens/new?scopes=repo&description=Pattern%20Scout%20Bot" target="_blank" rel="noopener"
+        style="display:inline-block;padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--fg);text-decoration:none;font-weight:600">① Crea il token su GitHub</a>
+     <div class="sub" style="margin:6px 0">Nella pagina che si apre: scorri in fondo e premi <strong>Generate token</strong>, poi copia il codice (inizia con <code>ghp_</code>).</div>
+     <label style="font-size:12px;color:var(--muted)">② Incolla qui il token</label><br>
+     <input type="password" id="ghtok" placeholder="ghp_…" style="width:100%;max-width:420px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--fg)">
+     <div class="sub" id="tokState" style="margin-top:4px"></div>
    </div>
    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-     <button id="applyBtn">Applica impostazioni</button>
+     <button id="applyBtn">③ Applica impostazioni</button>
      <span class="sub" id="applyStatus"></span>
    </div>
-   <div class="sub" style="margin-top:8px">Le impostazioni lanciano il bot su GitHub con le tue scelte e restano attive anche per i giri automatici. Serve un token una volta sola: GitHub → Settings → Developer settings → Fine-grained token → repo del bot → permesso <strong>Actions: Read and write</strong>.</div>
+   <div class="sub" style="margin-top:8px">Le scelte lanciano il bot con le tue impostazioni e restano attive anche per i giri automatici.
+     <br><strong>Senza token?</strong> Apri <a id="ghActions" href="#" target="_blank" rel="noopener" style="color:var(--accent)">GitHub → Actions → Run workflow</a> (sei già loggato sul telefono) e scegli lì le opzioni.</div>
  </details>
  <section class="grid">
    <div class="card"><div class="label">Capitale iniziale</div><div class="value" id="cap">100</div></div>
@@ -715,8 +722,22 @@ def _render_crypto(payload: dict) -> str:
  // ---- Settings panel: dispatch the GitHub workflow with the chosen options ----
  (function(){
    const tokKey='ps_ghtoken';
+   const repo0=p.repo||'';
+   // Token-free path: link straight to the GitHub Actions "Run workflow" page.
+   const ga=document.getElementById('ghActions');
+   if(ga&&repo0)ga.href='https://github.com/'+repo0+'/actions/workflows/paper-crypto.yml';
+   const ts=document.getElementById('tokState');
+   function tokUI(){const has=!!localStorage.getItem(tokKey);
+     if(ts)ts.innerHTML=has?'<span style="color:var(--good)">✓ token salvato in questo browser</span>':'';}
    const savedTok=localStorage.getItem(tokKey);
    if(savedTok)document.getElementById('ghtok').value=savedTok;
+   tokUI();
+   // Auto-save the token as you type (one-time; no need to reinsert it later).
+   document.getElementById('ghtok').addEventListener('input',(e)=>{
+     const v=(e.target.value||'').trim();
+     if(v)localStorage.setItem(tokKey,v); else localStorage.removeItem(tokKey);
+     tokUI();
+   });
    const st=(m)=>{document.getElementById('applyStatus').textContent=m;};
    document.getElementById('applyBtn').addEventListener('click',async()=>{
      const repo=p.repo||'';
