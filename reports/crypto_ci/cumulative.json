@@ -31,9 +31,41 @@
           "initial_stop": 1855.5488189207128,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1882.55,
-          "unrealized_pnl": -0.054835744030315124,
-          "unrealized_r": -0.027417872015157562
+          "current_price": 1870.18,
+          "unrealized_pnl": -0.9459701642502796,
+          "unrealized_r": -0.4729850821251398
+        },
+        "BNBUSDT:2026-07-16@08:00:power_tower": {
+          "symbol": "BNBUSDT",
+          "session": "2026-07-16@08:00",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-16T08:20:00+00:00",
+          "entry_time": "2026-07-16T08:20:00+00:00",
+          "exit_time": null,
+          "entry_price": 575.657685,
+          "exit_price": null,
+          "stop_price": 570.2179517008303,
+          "target_price": null,
+          "quantity": 0.3676650839307281,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.27342815337967924,
+          "status": "open",
+          "leverage": 20.0,
+          "margin": 10.582461553544682,
+          "liquidation_price": 549.753089175,
+          "notional": 211.64923107089365,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 15.799397196679111,
+          "initial_stop": 570.2179517008303,
+          "trail_extreme": 578.48,
+          "breakeven_done": false,
+          "current_price": 575.86,
+          "unrealized_pnl": 0.07438416145544477,
+          "unrealized_r": 0.037192080727722385
         }
       }
     },
@@ -68,13 +100,13 @@
           "initial_stop": 1855.5488189207128,
           "trail_extreme": 1896.51,
           "breakeven_done": false,
-          "current_price": 1882.55,
-          "unrealized_pnl": -0.054835744030315124,
-          "unrealized_r": -0.027417872015157562
+          "current_price": 1870.18,
+          "unrealized_pnl": -0.9459701642502796,
+          "unrealized_r": -0.4729850821251398
         }
       }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-16T12:32:28"
+  "updated": "2026-07-16T12:49:45"
 }
