@@ -3,10 +3,10 @@
   "wins":3,
   "losses":1,
   "win_rate":0.75,
-  "total_pnl":2.2813741531,
-  "avg_r":0.2851717691,
-  "profit_factor":5.2568114907,
+  "total_pnl":2.2900704572,
+  "avg_r":0.2862588071,
+  "profit_factor":5.2730379073,
   "starting_capital":100.0,
-  "ending_equity":102.2813741531,
+  "ending_equity":102.2900704572,
   "open_positions":1
 }
