@@ -494,6 +494,9 @@ def _render_crypto(payload: dict) -> str:
     html = """<!doctype html>
 <html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Pattern Scout — Paper ETH</title>
 <style>
  :root{color-scheme:light dark;--bg:Canvas;--fg:CanvasText;
@@ -899,7 +902,17 @@ def _render_crypto(payload: dict) -> str:
      const nowS=Math.floor(Date.now()/1000);
      const gap=seeded?(nowS-lastTime):1e9;
      const bigGap=gap>3600;                                   // > 1h -> reload fresh
-     const need=(!seeded||bigGap)?400:Math.min(1000,Math.max(3,Math.ceil(gap/60)+3));
+     let need;
+     if(!seeded||bigGap){
+       // Seed far enough back to include the entry of any open position (so its
+       // dashed lines have a visible start), capped at 1000 candles.
+       const ents=opens.filter(t=>(t.symbol||'')===sym)
+         .map(t=>Math.floor(Date.parse(t.entry_time)/1000)).filter(Number.isFinite);
+       const oldest=ents.length?Math.min.apply(null,ents):nowS;
+       need=Math.min(1000,Math.max(400,Math.ceil((nowS-oldest)/60)+30));
+     }else{
+       need=Math.min(1000,Math.max(3,Math.ceil(gap/60)+3));
+     }
      const bars=await fetchBars(need);
      if(!bars||!bars.length)return;
      if(!seeded||bigGap)allBars=bars.slice(); else mergeBars(bars);
