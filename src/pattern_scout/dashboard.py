@@ -579,7 +579,7 @@ def _render_crypto(payload: dict) -> str:
      <div class="sub" style="margin-bottom:8px">Per cambiare le impostazioni dal telefono serve collegare il tuo GitHub <strong>una volta sola</strong>. Il token resta salvato solo in questo browser.</div>
      <a id="createTok" href="https://github.com/settings/tokens/new?scopes=repo&description=Pattern%20Scout%20Bot" target="_blank" rel="noopener"
         style="display:inline-block;padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--fg);text-decoration:none;font-weight:600">① Crea il token su GitHub</a>
-     <div class="sub" style="margin:6px 0">Nella pagina che si apre: scorri in fondo e premi <strong>Generate token</strong>, poi copia il codice (inizia con <code>ghp_</code>).</div>
+     <div class="sub" style="margin:6px 0">Nella pagina: alla voce <strong>Expiration</strong> scegli <strong>"No expiration"</strong> (così vale per sempre), poi scorri in fondo, premi <strong>Generate token</strong> e copia il codice (inizia con <code>ghp_</code>).</div>
      <label style="font-size:12px;color:var(--muted)">② Incolla qui il token</label><br>
      <input type="password" id="ghtok" placeholder="ghp_…" style="width:100%;max-width:420px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--fg)">
      <div class="sub" id="tokState" style="margin-top:4px"></div>
