@@ -62,10 +62,10 @@
   },
   "risk": {
     "account_size": 100.0,
-    "risk_fraction": 0.10,
+    "risk_fraction": 0.05,
     "fixed_quantity": null,
     "point_value": 1.0,
-    "leverage": 20.0,
+    "leverage": 5.0,
     "sizing_mode": "risk",
     "maintenance_margin_rate": 0.005,
     "auto_leverage": true,
