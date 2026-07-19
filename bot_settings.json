@@ -1,6 +1,6 @@
 {
   "leverage": 20.0,
-  "risk_fraction": 0.03,
+  "risk_fraction": 0.05,
   "session_preset": "three",
   "symbols": [
     "ETHUSDT",
