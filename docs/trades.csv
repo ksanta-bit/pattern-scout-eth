@@ -1,1 +1,2 @@
-
+symbol,session,side,signal_type,signal_time,entry_time,exit_time,entry_price,exit_price,stop_price,target_price,quantity,pnl,r_multiple,exit_reason,atr_fraction,status,leverage,margin,liquidation_price,notional,fees,gross_pnl,atr,initial_stop,trail_extreme,breakeven_done
+BTCUSDT,2026-07-20@00:00,short,john_wick,2026-07-20T00:15:00+00:00,2026-07-20T00:20:00+00:00,2026-07-20T08:37:00+00:00,64969.499,64049.007406196484,64016.998906743116,,0.008831589991331714,7.445741217016019,0.8851237873132934,stop,0.31739187240005545,closed,20.0,28.68919885551179,67893.126455,573.7839771102358,0.6836631299241188,8.129404346940138,1528.3315112385246,65535.648470809625,63100.0,True
