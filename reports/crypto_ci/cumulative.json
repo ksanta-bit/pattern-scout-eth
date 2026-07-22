@@ -88,6 +88,35 @@
           "initial_stop": 77.8217072191172,
           "trail_extreme": 75.5,
           "breakeven_done": true
+        },
+        "PAXGUSDT:2026-07-22@00:00:john_wick": {
+          "symbol": "PAXGUSDT",
+          "session": "2026-07-22@00:00",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-22T00:25:00+00:00",
+          "entry_time": "2026-07-22T00:30:00+00:00",
+          "exit_time": "2026-07-22T01:14:00+00:00",
+          "entry_price": 4087.8150700000006,
+          "exit_price": 4112.520804369827,
+          "stop_price": 4110.4655715840345,
+          "target_price": null,
+          "quantity": 0.23472936997951682,
+          "pnl": -6.954077267557338,
+          "r_multiple": -1.307959374962849,
+          "exit_reason": "stop",
+          "atr_fraction": 0.20522105775118174,
+          "status": "closed",
+          "leverage": 20.0,
+          "margin": 47.976512798693726,
+          "liquidation_price": 4271.76674815,
+          "notional": 959.5302559738745,
+          "fees": 1.1549158040467558,
+          "gross_pnl": -5.799161463510583,
+          "atr": 66.36745833613881,
+          "initial_stop": 4110.4655715840345,
+          "trail_extreme": 4083.99,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -98,5 +127,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-22T00:12:51"
+  "updated": "2026-07-22T03:51:37"
 }
