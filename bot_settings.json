@@ -1,5 +1,5 @@
 {
-  "leverage": 20.0,
+  "leverage": 50.0,
   "risk_fraction": 0.05,
   "session_preset": "three",
   "symbols": [
