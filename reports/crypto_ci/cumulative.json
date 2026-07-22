@@ -117,6 +117,35 @@
           "initial_stop": 4157.559781782709,
           "trail_extreme": 4136.36,
           "breakeven_done": false
+        },
+        "SOLUSDT:2026-07-22@00:00:power_tower": {
+          "symbol": "SOLUSDT",
+          "session": "2026-07-22@00:00",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-22T00:15:00+00:00",
+          "entry_time": "2026-07-22T00:15:00+00:00",
+          "exit_time": "2026-07-22T14:05:00+00:00",
+          "entry_price": 78.34580749999999,
+          "exit_price": 78.19236500307326,
+          "stop_price": 78.15328835889382,
+          "target_price": null,
+          "quantity": 5.275065779827841,
+          "pnl": 0.3139697705048783,
+          "r_multiple": 0.3091619518085222,
+          "exit_reason": "stop",
+          "atr_fraction": 0.2028980854575187,
+          "status": "closed",
+          "leverage": 50.0,
+          "margin": 8.265585762724587,
+          "liquidation_price": 79.52099461249999,
+          "notional": 413.27928813622935,
+          "fees": 0.49544949420464945,
+          "gross_pnl": 0.8094192647095277,
+          "atr": 1.922147264823038,
+          "initial_stop": 79.07551481620575,
+          "trail_extreme": 77.0,
+          "breakeven_done": true
         }
       },
       "open": {
@@ -148,9 +177,9 @@
           "initial_stop": 1970.0610948942444,
           "trail_extreme": 1921.0,
           "breakeven_done": false,
-          "current_price": 1937.33,
-          "unrealized_pnl": 0.48297884118335954,
-          "unrealized_r": 0.12547335912710764
+          "current_price": 1935.58,
+          "unrealized_pnl": 0.7146059119956563,
+          "unrealized_r": 0.1856478930018902
         }
       }
     },
@@ -160,5 +189,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-22T21:52:14"
+  "updated": "2026-07-22T22:56:19"
 }
