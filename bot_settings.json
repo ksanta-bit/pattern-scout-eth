@@ -1,11 +1,9 @@
 {
-  "leverage": 50.0,
+  "leverage": 20.0,
   "risk_fraction": 0.05,
   "session_preset": "three",
   "symbols": [
     "ETHUSDT",
-    "BTCUSDT",
-    "SOLUSDT",
-    "PAXGUSDT"
+    "BTCUSDT"
   ]
 }
