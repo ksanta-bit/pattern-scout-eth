@@ -1,8 +1,7 @@
 {
   "variants": {
     "off": {
-      "trades": {},
-      "open": {
+      "trades": {
         "ETHUSDT:2026-07-22@13:30:john_wick": {
           "symbol": "ETHUSDT",
           "session": "2026-07-22@13:30",
@@ -10,32 +9,30 @@
           "signal_type": "john_wick",
           "signal_time": "2026-07-22T14:05:00+00:00",
           "entry_time": "2026-07-22T14:10:00+00:00",
-          "exit_time": null,
+          "exit_time": "2026-07-22T23:55:00+00:00",
           "entry_price": 1940.979025,
-          "exit_price": null,
-          "stop_price": 1970.030517460842,
+          "exit_price": 1934.25,
+          "stop_price": 1974.4269408354312,
           "target_price": null,
-          "quantity": 0.1721081974270143,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
-          "atr_fraction": 0.3476862218672614,
-          "status": "open",
+          "quantity": 0.14948614510395117,
+          "pnl": 0.658320178552813,
+          "r_multiple": 0.1316640357105626,
+          "exit_reason": "session_close",
+          "atr_fraction": 0.2584929698105218,
+          "status": "closed",
           "leverage": 20.0,
-          "margin": 16.70292006181969,
+          "margin": 14.507473608743783,
           "liquidation_price": 2028.323081125,
-          "notional": 334.05840123639376,
-          "fees": null,
-          "gross_pnl": null,
-          "atr": 50.96549384336868,
-          "initial_stop": 1970.030517460842,
+          "notional": 290.14947217487565,
+          "fees": 0.3475758290053159,
+          "gross_pnl": 1.005896007558129,
+          "atr": 68.55118734172532,
+          "initial_stop": 1974.4269408354312,
           "trail_extreme": 1921.0,
-          "breakeven_done": false,
-          "current_price": 1935.08,
-          "unrealized_pnl": 1.0152705593269216,
-          "unrealized_r": 0.2030541118653843
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {},
@@ -43,5 +40,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-22T23:08:46"
+  "updated": "2026-07-23T00:02:56"
 }
