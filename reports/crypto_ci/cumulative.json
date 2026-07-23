@@ -43,27 +43,27 @@
           "exit_time": null,
           "entry_price": 1904.4622925,
           "exit_price": null,
-          "stop_price": 1898.6628210536037,
+          "stop_price": 1898.3017627199888,
           "target_price": null,
-          "quantity": 0.2759226334542955,
+          "quantity": 0.27821729106491194,
           "pnl": null,
           "r_multiple": null,
           "exit_reason": null,
-          "atr_fraction": 0.2186647205715984,
+          "atr_fraction": 0.22140019866404592,
           "status": "open",
           "leverage": 20.0,
-          "margin": 26.274212553050244,
+          "margin": 26.4927169977311,
           "liquidation_price": 1990.1630956625,
-          "notional": 525.4842510610049,
+          "notional": 529.854339954622,
           "fees": null,
           "gross_pnl": null,
-          "atr": 48.70470175600601,
-          "initial_stop": 1922.7026084390016,
+          "atr": 48.10293786664785,
+          "initial_stop": 1922.552167466662,
           "trail_extreme": 1869.44,
           "breakeven_done": true,
-          "current_price": 1883.57,
-          "unrealized_pnl": 5.764656365497474,
-          "unrealized_r": 3.602447687363288
+          "current_price": 1883.64,
+          "unrealized_pnl": 5.793121813111234,
+          "unrealized_r": 3.379951602143185
         }
       }
     },
@@ -73,5 +73,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-23T22:44:56"
+  "updated": "2026-07-23T23:44:52"
 }
