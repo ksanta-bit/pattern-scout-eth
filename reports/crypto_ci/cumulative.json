@@ -32,40 +32,7 @@
           "breakeven_done": false
         }
       },
-      "open": {
-        "ETHUSDT:2026-07-23@13:30:power_tower": {
-          "symbol": "ETHUSDT",
-          "session": "2026-07-23@13:30",
-          "side": "short",
-          "signal_type": "power_tower",
-          "signal_time": "2026-07-23T13:45:00+00:00",
-          "entry_time": "2026-07-23T13:45:00+00:00",
-          "exit_time": null,
-          "entry_price": 1904.4622925,
-          "exit_price": null,
-          "stop_price": 1898.3017627199888,
-          "target_price": null,
-          "quantity": 0.27821729106491194,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
-          "atr_fraction": 0.22140019866404592,
-          "status": "open",
-          "leverage": 20.0,
-          "margin": 26.4927169977311,
-          "liquidation_price": 1990.1630956625,
-          "notional": 529.854339954622,
-          "fees": null,
-          "gross_pnl": null,
-          "atr": 48.10293786664785,
-          "initial_stop": 1922.552167466662,
-          "trail_extreme": 1869.44,
-          "breakeven_done": true,
-          "current_price": 1883.64,
-          "unrealized_pnl": 5.793121813111234,
-          "unrealized_r": 3.379951602143185
-        }
-      }
+      "open": {}
     },
     "on": {
       "trades": {},
@@ -73,5 +40,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-23T23:44:52"
+  "updated": "2026-07-24T01:14:30"
 }
