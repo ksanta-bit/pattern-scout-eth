@@ -34,6 +34,8 @@ class SessionSetup:
     daily_context_kind: str
     daily_context_distance_atr: Optional[float]
     vwap: Optional[float] = None
+    pdh: Optional[float] = None
+    pdl: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -110,6 +112,20 @@ def annotate_pattern_scout(data: pd.DataFrame, config: PatternScoutConfig) -> pd
     frame = add_daily_context_columns(frame, config)
     frame = add_candle_shape_columns(frame)
     frame = add_vwap_columns(frame)
+    frame = add_prior_levels_columns(frame)
+    return frame
+
+
+def add_prior_levels_columns(data: pd.DataFrame) -> pd.DataFrame:
+    """Previous day's high/low (video 3's RH/RL levels), mapped onto each day."""
+    frame = data.copy()
+    if "calendar_date" not in frame.columns:
+        frame["calendar_date"] = frame["timestamp"].dt.date
+    daily = frame.groupby("calendar_date").agg(dh=("high", "max"), dl=("low", "min"))
+    prior_h = daily["dh"].shift(1)
+    prior_l = daily["dl"].shift(1)
+    frame["pdh"] = frame["calendar_date"].map(prior_h.to_dict())
+    frame["pdl"] = frame["calendar_date"].map(prior_l.to_dict())
     return frame
 
 
@@ -399,6 +415,17 @@ def build_session_setup(session_frame: pd.DataFrame, config: PatternScoutConfig)
         if side == "short" and not (float(first["opening_high"]) > vwap_val):
             return None
 
+    # Prior-day range location filter (video 3): long only in the lower half of the
+    # previous day's range, short only in the upper half.
+    pdh = float(first["pdh"]) if "pdh" in first and pd.notna(first["pdh"]) else None
+    pdl = float(first["pdl"]) if "pdl" in first and pd.notna(first["pdl"]) else None
+    if getattr(config, "levels_filter", False) and pdh is not None and pdl is not None and pdh > pdl:
+        mid = (pdh + pdl) / 2.0
+        if side == "long" and not (float(first["opening_low"]) < mid):
+            return None
+        if side == "short" and not (float(first["opening_high"]) > mid):
+            return None
+
     return SessionSetup(
         session=first["session"],
         side=side,
@@ -420,6 +447,8 @@ def build_session_setup(session_frame: pd.DataFrame, config: PatternScoutConfig)
             float(first["daily_context_distance_atr"]) if pd.notna(first["daily_context_distance_atr"]) else None
         ),
         vwap=vwap_val,
+        pdh=pdh,
+        pdl=pdl,
     )
 
 
@@ -433,6 +462,12 @@ def _pick_target(setup: SessionSetup, config: PatternScoutConfig, side: Side, en
             tgt = v
         elif side == "short" and v < entry_ref:
             tgt = v
+    # Prior-day level target (video 3): aim for the next level (prior-day high/low).
+    if getattr(config, "levels_target", False):
+        if side == "long" and setup.pdh is not None and float(setup.pdh) > entry_ref:
+            tgt = float(setup.pdh)
+        elif side == "short" and setup.pdl is not None and float(setup.pdl) < entry_ref:
+            tgt = float(setup.pdl)
     return tgt
 
 

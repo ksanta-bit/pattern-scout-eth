@@ -123,6 +123,12 @@ class PatternScoutConfig:
     # vwap_target: use VWAP as the take-profit target when it's beyond entry.
     vwap_filter: bool = False
     vwap_target: bool = False
+    # Prior-day range levels (video 3): RH/RL = previous day's high/low, SH/SL = extensions.
+    # levels_filter: only long in the lower half of the prior-day range, short in the upper half.
+    # levels_target: take profit at the next level (prior-day high for longs, low for shorts).
+    levels_filter: bool = False
+    levels_target: bool = False
+    levels_extension: float = 0.25  # SH/SL = prior range extended by this fraction beyond RH/RL
     john_wick: JohnWickConfig = field(default_factory=JohnWickConfig)
     power_tower: PowerTowerConfig = field(default_factory=PowerTowerConfig)
     daily_context: DailyContextConfig = field(default_factory=DailyContextConfig)

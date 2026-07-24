@@ -1098,6 +1098,20 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
             candles_by_symbol[s] = []
     chart_candles = candles_by_symbol.get(chart_symbol, [])
 
+    # Prior-day High/Low levels (video 3: RH/RL) per symbol, for the chart.
+    levels_by_symbol = {}
+    for s in symbols:
+        mb = minute_bars.get(s) or []
+        if not mb:
+            continue
+        days = sorted({b["timestamp"].date() for b in mb})
+        if len(days) >= 2:
+            prev = days[-2]
+            pb = [b for b in mb if b["timestamp"].date() == prev]
+            if pb:
+                levels_by_symbol[s] = {"pdh": max(b["high"] for b in pb),
+                                       "pdl": min(b["low"] for b in pb)}
+
     default_variant = "on" if config.daily_context.enabled else "off"
     d = variant_summaries[default_variant]
     log(f"CI pass complete [{default_variant}]. Closed: {len(d['closed'])} | "
@@ -1105,7 +1119,8 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
     _write_cumulative_reports(out, variant_summaries, default_variant, config,
                               chart_symbol=chart_symbol, chart_candles=chart_candles,
                               bot_log=bot_log[-25:], symbols=list(symbols),
-                              candles_by_symbol=candles_by_symbol)
+                              candles_by_symbol=candles_by_symbol,
+                              levels_by_symbol=levels_by_symbol)
     return cumulative
 
 
@@ -1134,7 +1149,8 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
                               chart_candles: Optional[list] = None,
                               bot_log: Optional[list] = None,
                               symbols: Optional[list] = None,
-                              candles_by_symbol: Optional[dict] = None) -> None:
+                              candles_by_symbol: Optional[dict] = None,
+                              levels_by_symbol: Optional[dict] = None) -> None:
     starting = float(config.risk.account_size)
     dv = variant_summaries[default_variant]
     rows = dv["closed"]
@@ -1163,6 +1179,7 @@ def _write_cumulative_reports(out: Path, variant_summaries: dict, default_varian
         repo=os.environ.get("GITHUB_REPOSITORY", ""),
         symbols=symbols or ([chart_symbol] if chart_symbol else []),
         candles_by_symbol=candles_by_symbol or {},
+        levels_by_symbol=levels_by_symbol or {},
     )
     (out / "index.html").write_text(Path(dash).read_text(encoding="utf-8"), encoding="utf-8")
 

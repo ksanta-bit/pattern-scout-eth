@@ -467,7 +467,7 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
                            chart_symbol: str | None = None,
                            chart_candles: list | None = None, bot_log: list | None = None,
                            leverage: float = 1.0, repo: str = "", symbols: list | None = None,
-                           candles_by_symbol: dict | None = None) -> Path:
+                           candles_by_symbol: dict | None = None, levels_by_symbol: dict | None = None) -> Path:
     """Interactive paper dashboard with a toggle button that switches between the
     two strategy variants (daily filter OFF / ON): 1-minute candlestick chart with
     entry/stop/target segments, reset button, open/closed logs and a bot log."""
@@ -485,6 +485,7 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
         "repo": repo or "",
         "symbols": symbols or ([chart_symbol] if chart_symbol else []),
         "candles_by_symbol": candles_by_symbol or {},
+        "levels_by_symbol": levels_by_symbol or {},
         "updated": _dt.datetime.now().strftime("%d/%m/%Y %H:%M"),
     })
     output.write_text(_render_crypto(payload), encoding="utf-8")
@@ -515,11 +516,16 @@ def _render_crypto(payload: dict) -> str:
  button{font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--border);
   background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
  button.secondary{background:var(--card);color:var(--fg)}
- .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
- .card{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:14px}
- .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
- .value{margin-top:6px;font-size:24px;font-weight:700}
+ .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+ .card{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:14px;
+   background:linear-gradient(160deg,color-mix(in srgb,Canvas 90%,CanvasText 10%),var(--card));
+   padding:16px 16px 14px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+ .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.5}
+ .card.good::before{background:var(--good);opacity:.9}.card.bad::before{background:var(--bad);opacity:.9}
+ .label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+ .value{margin-top:8px;font-size:27px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
  .value.good{color:var(--good)}.value.bad{color:var(--bad)}
+ .value small{font-size:14px;font-weight:600;opacity:.75;margin-left:4px}
  h2{font-size:15px;margin:20px 0 8px}
  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
  table{width:100%;min-width:720px;border-collapse:collapse;font-size:13px}
@@ -599,9 +605,9 @@ def _render_crypto(payload: dict) -> str:
  </details>
  <section class="grid">
    <div class="card"><div class="label">Capitale iniziale</div><div class="value" id="cap">100</div></div>
-   <div class="card"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
-   <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
-   <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
+   <div class="card" id="cardEq"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
+   <div class="card" id="cardEqU"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
+   <div class="card" id="cardPnl"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
  </section>
  <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
    <span id="chartTitle">Grafico 1 minuto</span>
@@ -671,11 +677,15 @@ def _render_crypto(payload: dict) -> str:
    const unreal=opens.reduce((a,t)=>a+(Number(t.unrealized_pnl)||0),0);
    const eq=b.capital+realized;
    document.getElementById('cap').textContent=money.format(b.capital);
-   document.getElementById('eq').textContent=money.format(eq);
-   const eqU=document.getElementById('eqU');eqU.textContent=money.format(eq+unreal);
-   eqU.className='value '+((eq+unreal)>=b.capital?'good':'bad');
-   const tp=document.getElementById('pnl');tp.textContent=money.format(realized);
-   tp.className='value '+(realized>0?'good':realized<0?'bad':'');
+   const pct=(x)=>(b.capital?((x/b.capital*100)>=0?'+':'')+ (x/b.capital*100).toFixed(1)+'%':'');
+   const eqEl=document.getElementById('eq');eqEl.innerHTML=money.format(eq)+' <small>'+pct(eq-b.capital)+'</small>';
+   const eqU=document.getElementById('eqU');eqU.innerHTML=money.format(eq+unreal)+' <small>'+pct(eq+unreal-b.capital)+'</small>';
+   const tp=document.getElementById('pnl');tp.innerHTML=money.format(realized)+' <small>'+pct(realized)+'</small>';
+   const cls=(el,v)=>{el.classList.remove('good','bad');if(v>0)el.classList.add('good');else if(v<0)el.classList.add('bad');};
+   cls(document.getElementById('cardEq'),eq-b.capital);
+   cls(document.getElementById('cardEqU'),eq+unreal-b.capital);
+   cls(document.getElementById('cardPnl'),realized);
+   cls(eqEl,eq-b.capital);cls(eqU,eq+unreal-b.capital);cls(tp,realized);
    document.getElementById('openCount').textContent=opens.length?`(${opens.length} live)`:'';
    document.getElementById('openRows').innerHTML=opens.map(t=>{
      const u=Number(t.unrealized_pnl)||0;
@@ -872,7 +882,19 @@ def _render_crypto(payload: dict) -> str:
    }
 
    const lg2=document.getElementById('legend');
-   if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>');
+   if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>'+
+     '<span><span class="dot" style="background:#c9a227"></span>RH/RL (giorno prima)</span>');
+
+   // --- Prior-day High/Low (video 3: RH/RL) reference lines ---
+   let prh=null,prl=null;
+   function drawPriorLevels(){
+     const lv=(p.levels_by_symbol||{})[sym]; if(!lv||!allBars.length)return;
+     const t0=allBars[0].time,t1=allBars[allBars.length-1].time;
+     if(!prh)prh=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(!prl)prl=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(lv.pdh)prh.setData([{time:t0,value:lv.pdh},{time:t1,value:lv.pdh}]);
+     if(lv.pdl)prl.setData([{time:t0,value:lv.pdl},{time:t1,value:lv.pdl}]);
+   }
 
    // positions + daily lines are drawn by the first tick() (avoids duplicates)
    new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
@@ -922,7 +944,7 @@ def _render_crypto(payload: dict) -> str:
      lastTime=allBars[allBars.length-1].time;
      if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();chart.timeScale().fitContent();}
      if(!posDrawn){drawPositions();posDrawn=true;}
-     growOpenLines();drawDailyHL();
+     growOpenLines();drawDailyHL();drawPriorLevels();
      const last=allBars[allBars.length-1];
      document.getElementById('updated').textContent=
        'Prezzo live '+sym+' (Bitget): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2})+
@@ -936,6 +958,7 @@ def _render_crypto(payload: dict) -> str:
      sym=symSel.value; setTitle();
      lastTime=0; posDrawn=false;
      if(dhi)dhi.setData([]); if(dlo)dlo.setData([]);
+     if(prh)prh.setData([]); if(prl)prl.setData([]);
      if(window.__redrawPositions)window.__redrawPositions();
      const emb=byS[sym]||[];
      if(emb.length){
@@ -943,7 +966,7 @@ def _render_crypto(payload: dict) -> str:
        allBars=emb.slice(); seeded=true; series.setData(allBars);
        lastTime=allBars[allBars.length-1].time;
        const w=document.getElementById('chartWait'); if(w)w.remove();
-       posDrawn=true; drawPositions(); drawDailyHL(); chart.timeScale().fitContent();
+       posDrawn=true; drawPositions(); drawDailyHL(); drawPriorLevels(); chart.timeScale().fitContent();
      }else{
        allBars=[]; seeded=false; candles=[]; series.setData([]);
        el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico '+sym+'…</div>');
