@@ -84,7 +84,7 @@ jobs:
           python -m pattern_scout.cli paper-crypto \
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
-            --symbols ETHUSDT,PAXGUSDT \
+            --symbols ETHUSDT,SOLUSDT,BTCUSDT \
             --exchange "binancevision,bitget" \
             --config config.crypto.json \
             --settings bot_settings.json \

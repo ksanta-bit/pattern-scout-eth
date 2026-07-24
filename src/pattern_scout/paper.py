@@ -246,6 +246,85 @@ def size_position(equity: float, entry_price: float, risk_per_unit: float,
     return qty, margin, notional
 
 
+def _advance_position(pos: dict, bars: list, config: PatternScoutConfig) -> tuple:
+    """Advance an EXISTING open position using its own recorded parameters and new
+    price bars. Independent of the strategy replay, so changing config parameters
+    (leverage, risk, symbols, thresholds) never erases or rewrites a live position.
+
+    Returns ('closed', trade_dict) or ('open', updated_pos_dict)."""
+    from copy import deepcopy
+    p = deepcopy(pos)
+    em = config.exit_management
+    side = p["side"]
+    entry = float(p["entry_price"])
+    initial_stop = float(p.get("initial_stop") if p.get("initial_stop") is not None else p["stop_price"])
+    atr = p.get("atr")
+    stop = float(p["stop_price"])
+    target = p.get("target_price")
+    target = float(target) if target is not None else None
+    extreme = float(p.get("trail_extreme") if p.get("trail_extreme") is not None else entry)
+    be = bool(p.get("breakeven_done", False))
+    liq = p.get("liquidation_price")
+    liq = float(liq) if liq is not None else None
+    sess_close = parse_clock(config.session_close)
+    ex = config.execution
+
+    exit_price = exit_reason = exit_ts = None
+    for b in bars:
+        if em.mode == "trailing" and atr and initial_stop is not None:
+            risk = abs(entry - initial_stop)
+            if risk > 0:
+                if side == "long":
+                    extreme = max(extreme, b["high"]); r = (extreme - entry) / risk
+                    if r >= em.breakeven_trigger_r and not be: stop = max(stop, entry); be = True
+                    if r >= em.trail_trigger_r: stop = max(stop, extreme - em.trail_atr_fraction * atr)
+                else:
+                    extreme = min(extreme, b["low"]); r = (entry - extreme) / risk
+                    if r >= em.breakeven_trigger_r and not be: stop = min(stop, entry); be = True
+                    if r >= em.trail_trigger_r: stop = min(stop, extreme + em.trail_atr_fraction * atr)
+        if side == "long":
+            if liq is not None and b["low"] <= liq and liq >= stop:
+                exit_price, exit_reason = liq, "liquidation"
+            elif b["low"] <= stop:
+                exit_price, exit_reason = _slip_exit(stop, side, "stop", config), "stop"
+            elif target is not None and b["high"] >= target:
+                exit_price, exit_reason = _slip_exit(target, side, "target", config), "target"
+        else:
+            if liq is not None and b["high"] >= liq and liq <= stop:
+                exit_price, exit_reason = liq, "liquidation"
+            elif b["high"] >= stop:
+                exit_price, exit_reason = _slip_exit(stop, side, "stop", config), "stop"
+            elif target is not None and b["low"] <= target:
+                exit_price, exit_reason = _slip_exit(target, side, "target", config), "target"
+        if exit_price is None and ex.max_hold_minutes and ex.max_hold_minutes > 0:
+            entry_ts = pd.Timestamp(p["entry_time"])
+            if (b["timestamp"] - entry_ts).total_seconds() / 60.0 >= ex.max_hold_minutes:
+                exit_price, exit_reason = float(b["close"]), "max_hold"
+        if exit_price is None and ex.force_exit_at_session_close and b["timestamp"].time() >= sess_close:
+            exit_price, exit_reason = float(b["close"]), "session_close"
+        if exit_price is not None:
+            exit_ts = b["timestamp"]; break
+
+    if exit_price is None:
+        p["stop_price"] = stop; p["trail_extreme"] = extreme; p["breakeven_done"] = be
+        if bars:
+            last = float(bars[-1]["close"]); p["current_price"] = last
+            per = (last - entry) if side == "long" else (entry - last)
+            p["unrealized_pnl"] = float(per * p["quantity"] * config.risk.point_value)
+            denom = abs(entry - stop) * p["quantity"] * config.risk.point_value
+            p["unrealized_r"] = float(p["unrealized_pnl"] / denom) if denom else 0.0
+        return ("open", p)
+
+    from dataclasses import fields as _dcfields
+    valid = {f.name for f in _dcfields(PaperTrade)}
+    tr = PaperTrade(**{k: v for k, v in p.items() if k in valid})
+    tr.stop_price = stop; tr.trail_extreme = extreme; tr.breakeven_done = be
+    broker = PaperBroker(config)
+    broker.open_positions[p["symbol"]] = tr
+    closed = broker.close_trade(p["symbol"], exit_ts, exit_price, exit_reason)
+    return ("closed", closed.to_dict())
+
+
 def _slip_entry(price: float, side: str, cfg: PatternScoutConfig) -> float:
     pct = cfg.execution.entry_slippage_pct
     return float(price) * (1 + pct if side == "long" else 1 - pct)
@@ -934,11 +1013,28 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
         cfg_v = copy.deepcopy(config)
         cfg_v.daily_context.enabled = enabled
         prev = cumulative["variants"].get(vkey, {"trades": {}, "open": {}})
-        trades_v = dict(prev.get("trades", {}))
+        trades_v = dict(prev.get("trades", {}))   # closed trades are permanent history
         open_v = {}
+        handled = set(trades_v.keys())
+        # PERSISTENCE: advance existing open positions with their OWN recorded params,
+        # so a config change never erases or rewrites a live position.
+        for key, pos in prev.get("open", {}).items():
+            psym = pos.get("symbol")
+            mb = minute_bars.get(psym, []) or []
+            try:
+                et = pd.Timestamp(pos.get("entry_time"))
+            except Exception:
+                et = None
+            bars_after = [b for b in mb if et is None or b["timestamp"] > et]
+            status, res = _advance_position(pos, bars_after, cfg_v)
+            if status == "closed":
+                trades_v[key] = res
+            else:
+                open_v[key] = res
+            handled.add(key)
         # Compounding: size this run's new trades on the realised equity so far.
         prev_realized = sum(float(t.get("pnl") or 0.0)
-                            for t in prev.get("trades", {}).values() if t.get("status") == "closed")
+                            for t in trades_v.values() if t.get("status") == "closed")
         sizing_equity = (starting + prev_realized) if compound else starting
         for sym in symbols:
             trader = run_crypto_paper(cfg_v, [sym], interval=interval, warmup_days=lookback_days,
@@ -948,13 +1044,14 @@ def run_crypto_ci(config: PatternScoutConfig, symbols: list[str], out_dir: str |
                                       equity_override=sizing_equity)
             for t in trader.broker.trades:
                 key = f"{sym}:{t.session}:{t.signal_type}"
-                # Keep already-recorded closed trades immutable (their size/PnL is realised).
+                if key in handled:   # already tracked (persistent) -> don't let replay rewrite it
+                    continue
                 trades_v.setdefault(key, t.to_dict())
             eng = trader.engines.get(sym)
             last_price = float(eng._rows[-1]["close"]) if (eng and eng._rows) else None
             for _, t in trader.broker.open_positions.items():
                 key = f"{sym}:{t.session}:{t.signal_type}"
-                if key in trades_v:  # already realised earlier -> never show it as open too
+                if key in handled or key in trades_v:  # already tracked / realised
                     continue
                 d = t.to_dict()
                 if last_price is not None:
