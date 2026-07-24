@@ -118,6 +118,11 @@ class PatternScoutConfig:
     opening_body_fraction_min: float = 0.55
     allow_third_opening_bar_signal: bool = True
     max_trades_per_session: int = 1
+    # VWAP (from the "$20 risk" video): session VWAP as confluence/target.
+    # vwap_filter: only take a setup that flushed to the mean-reversion side of VWAP.
+    # vwap_target: use VWAP as the take-profit target when it's beyond entry.
+    vwap_filter: bool = False
+    vwap_target: bool = False
     john_wick: JohnWickConfig = field(default_factory=JohnWickConfig)
     power_tower: PowerTowerConfig = field(default_factory=PowerTowerConfig)
     daily_context: DailyContextConfig = field(default_factory=DailyContextConfig)

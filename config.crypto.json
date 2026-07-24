@@ -16,6 +16,8 @@
   "opening_body_fraction_min": 0.45,
   "allow_third_opening_bar_signal": true,
   "max_trades_per_session": 1,
+  "vwap_filter": true,
+  "vwap_target": false,
   "john_wick": {
     "enabled": true,
     "lower_wick_to_body_min": 1.5,

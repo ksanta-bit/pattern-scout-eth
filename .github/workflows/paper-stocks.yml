@@ -41,6 +41,9 @@ jobs:
           ALPACA_API_KEY_ID: ${{ secrets.ALPACA_API_KEY_ID }}
           ALPACA_API_SECRET_KEY: ${{ secrets.ALPACA_API_SECRET_KEY }}
         run: |
+          if [ -z "$ALPACA_API_KEY_ID" ]; then
+            echo "Nessuna chiave Alpaca impostata ancora — salto (nessun errore)."; exit 0
+          fi
           python -m pattern_scout.cli paper-crypto \
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \

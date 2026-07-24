@@ -33,6 +33,7 @@ class SessionSetup:
     daily_context_level: Optional[float]
     daily_context_kind: str
     daily_context_distance_atr: Optional[float]
+    vwap: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -108,6 +109,21 @@ def annotate_pattern_scout(data: pd.DataFrame, config: PatternScoutConfig) -> pd
     frame = add_opening_range_columns(frame, config)
     frame = add_daily_context_columns(frame, config)
     frame = add_candle_shape_columns(frame)
+    frame = add_vwap_columns(frame)
+    return frame
+
+
+def add_vwap_columns(data: pd.DataFrame) -> pd.DataFrame:
+    """Session VWAP anchored to each calendar day (like the video's intraday VWAP)."""
+    frame = data.copy()
+    if "calendar_date" not in frame.columns:
+        frame["calendar_date"] = frame["timestamp"].dt.date
+    tp = (frame["high"] + frame["low"] + frame["close"]) / 3.0
+    vol = frame["volume"].where(frame["volume"] > 0, 1.0)  # guard zero-volume feeds
+    pv = tp * vol
+    cum_pv = pv.groupby(frame["calendar_date"]).cumsum()
+    cum_v = vol.groupby(frame["calendar_date"]).cumsum().replace(0, np.nan)
+    frame["vwap"] = cum_pv / cum_v
     return frame
 
 
@@ -369,6 +385,20 @@ def build_session_setup(session_frame: pd.DataFrame, config: PatternScoutConfig)
     opening_end = session_frame.loc[session_frame["bar_number"] == config.opening_bars - 1, "timestamp"]
     if opening_end.empty:
         return None
+
+    # VWAP confluence (from the video): the flush should push to the mean-reversion side
+    # of VWAP — below VWAP for a long, above VWAP for a short.
+    vwap_val = None
+    if "vwap" in session_frame.columns:
+        vrow = session_frame.loc[session_frame["bar_number"] == config.opening_bars - 1, "vwap"]
+        if not vrow.empty and pd.notna(vrow.iloc[0]):
+            vwap_val = float(vrow.iloc[0])
+    if getattr(config, "vwap_filter", False) and vwap_val is not None:
+        if side == "long" and not (float(first["opening_low"]) < vwap_val):
+            return None
+        if side == "short" and not (float(first["opening_high"]) > vwap_val):
+            return None
+
     return SessionSetup(
         session=first["session"],
         side=side,
@@ -389,7 +419,21 @@ def build_session_setup(session_frame: pd.DataFrame, config: PatternScoutConfig)
         daily_context_distance_atr=(
             float(first["daily_context_distance_atr"]) if pd.notna(first["daily_context_distance_atr"]) else None
         ),
+        vwap=vwap_val,
     )
+
+
+def _pick_target(setup: SessionSetup, config: PatternScoutConfig, side: Side, entry_ref: float) -> float:
+    """Take-profit target: opposite side of the opening range, or VWAP when
+    ``vwap_target`` is on and VWAP sits beyond entry in the profit direction."""
+    tgt = setup.opening_high if side == "long" else setup.opening_low
+    if getattr(config, "vwap_target", False) and setup.vwap is not None:
+        v = float(setup.vwap)
+        if side == "long" and v > entry_ref:
+            tgt = v
+        elif side == "short" and v < entry_ref:
+            tgt = v
+    return tgt
 
 
 def find_session_signals(session_frame: pd.DataFrame, setup: SessionSetup, config: PatternScoutConfig) -> list[Signal]:
@@ -407,8 +451,8 @@ def find_session_signals(session_frame: pd.DataFrame, setup: SessionSetup, confi
         pos = int(row.bar_number)
         if config.john_wick.enabled and is_john_wick(row, setup.side, config):
             stop = stop_with_buffer(row.low if setup.side == "long" else row.high, setup.side, config)
-            target = setup.opening_high if setup.side == "long" else setup.opening_low
             trigger = row.high if setup.side == "long" else row.low
+            target = _pick_target(setup, config, setup.side, float(trigger))
             if target_is_valid(setup.side, trigger, target, stop):
                 signals.append(
                     Signal(
@@ -479,7 +523,7 @@ def build_power_tower_signal(prev, row, session_frame: pd.DataFrame, setup: Sess
         )
         if row.high < threshold:
             return None
-        target = setup.opening_high
+        target = _pick_target(setup, config, "long", float(threshold))
         stop_base = session_frame.loc[session_frame["timestamp"] <= row.timestamp, "low"].min()
         stop = stop_with_buffer(stop_base, "long", config)
     else:
@@ -492,7 +536,7 @@ def build_power_tower_signal(prev, row, session_frame: pd.DataFrame, setup: Sess
         )
         if row.low > threshold:
             return None
-        target = setup.opening_low
+        target = _pick_target(setup, config, "short", float(threshold))
         stop_base = session_frame.loc[session_frame["timestamp"] <= row.timestamp, "high"].max()
         stop = stop_with_buffer(stop_base, "short", config)
 
