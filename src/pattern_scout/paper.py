@@ -229,6 +229,9 @@ def size_position(equity: float, entry_price: float, risk_per_unit: float,
     lev = max(1.0, float(leverage if leverage is not None else risk.leverage))
     if risk.fixed_quantity is not None:
         qty = float(risk.fixed_quantity)
+    elif getattr(risk, "fixed_risk_usd", None):
+        # Fixed-dollar risk (the video's "$20 of risk"): stop-out loses ~fixed_risk_usd.
+        qty = (float(risk.fixed_risk_usd) / risk_per_unit) if risk_per_unit > 0 else 0.0
     elif risk.sizing_mode == "leverage":
         # Full notional at max leverage (aggressive; risk controlled only by the stop).
         qty = (equity * lev) / entry_price if entry_price > 0 else 0.0

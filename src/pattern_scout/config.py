@@ -76,6 +76,9 @@ class RiskConfig:
     account_size: float = 10_000.0
     risk_fraction: float = 0.01
     fixed_quantity: Optional[float] = None
+    # Fixed-dollar risk per trade (the video's "$20 of risk"): size so a stop-out
+    # loses about this many dollars. Overrides risk_fraction when set.
+    fixed_risk_usd: Optional[float] = None
     point_value: float = 1.0
     # Max leverage for margin/perp trading (crypto). 1.0 = spot/no leverage. Up to 100x.
     leverage: float = 1.0

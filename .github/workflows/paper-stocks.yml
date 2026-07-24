@@ -1,0 +1,62 @@
+name: Pattern Scout — Paper Stocks (TradFi)
+
+# Twin bot: same strategy on US stocks/ETFs (S&P, Nasdaq, gold, Tesla-2x) at the
+# New York session open, via Alpaca paper market data. PAPER only (simulated fills).
+#
+# Requires two repo secrets (Settings -> Secrets and variables -> Actions):
+#   ALPACA_API_KEY_ID, ALPACA_API_SECRET_KEY   (free paper keys from alpaca.markets)
+#
+# Runs every 5 min during (roughly) US market hours. Publishes to docs/stocks/.
+
+on:
+  schedule:
+    - cron: "*/5 13-21 * * 1-5"   # ~09:00-17:00 ET, Mon-Fri (UTC)
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: "Azzera lo storico azioni"
+        type: boolean
+        default: false
+
+concurrency:
+  group: paper-stocks
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pandas numpy
+      - name: Run one paper pass (stocks)
+        env:
+          PYTHONPATH: src
+          ALPACA_API_KEY_ID: ${{ secrets.ALPACA_API_KEY_ID }}
+          ALPACA_API_SECRET_KEY: ${{ secrets.ALPACA_API_SECRET_KEY }}
+        run: |
+          python -m pattern_scout.cli paper-crypto \
+            --ci \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
+            --symbols SPY,QQQ,GLD \
+            --exchange alpaca \
+            --config config.stocks.json \
+            --lookback-days 20 \
+            --out docs/stocks \
+            --cumulative reports/stocks_ci/cumulative.json
+      - name: Commit state
+        run: |
+          git config user.name "pattern-scout-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --no-rebase -X ours || true
+          git add reports/stocks_ci/cumulative.json docs/stocks/ || true
+          git commit -m "stocks: update $(date -u +'%Y-%m-%dT%H:%MZ')" || echo "nothing to commit"
+          git push || echo "nothing to push"
+      # Pages publishing is handled by the crypto workflow (it deploys the whole docs/ tree,
+      # which includes docs/stocks/). Dashboard at: https://<user>.github.io/<repo>/stocks/

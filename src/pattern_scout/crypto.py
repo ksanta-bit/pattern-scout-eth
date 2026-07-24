@@ -191,7 +191,10 @@ def _single_feed(exchange: str, interval: str) -> object:
         return BinanceDataFeed(interval, base_url=BINANCE_VISION_BASE)
     if ex in {"bitget"}:
         return BitgetDataFeed(interval)
-    raise ExchangeError(f"Unknown exchange '{exchange}'. Use binance, binanceus, binancevision or bitget.")
+    if ex in {"alpaca", "stocks"}:
+        from .alpaca import AlpacaDataFeed  # lazy: needs ALPACA_* env for real use
+        return AlpacaDataFeed(interval)
+    raise ExchangeError(f"Unknown exchange '{exchange}'. Use binance, binanceus, binancevision, bitget or alpaca.")
 
 
 def make_feed(exchange: str, interval: str = "5m") -> object:

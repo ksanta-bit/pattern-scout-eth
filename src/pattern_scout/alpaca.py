@@ -202,39 +202,58 @@ class AlpacaBroker(Broker):
 # Data feed
 # --------------------------------------------------------------------------- #
 class AlpacaDataFeed:
-    """Polls closed 5-minute bars for a set of symbols from Alpaca market data."""
+    """Alpaca stock/ETF bars, exposing the same interface as the crypto feeds so the
+    exact same CI engine can run the strategy on TradFi (S&P, Nasdaq, gold, stocks)."""
 
-    def __init__(self, timeframe: str = "5Min", feed: str = "iex"):
-        self.timeframe = timeframe
+    _TF = {"1m": "1Min", "5m": "5Min", "15m": "15Min", "1h": "1Hour", "1d": "1Day"}
+    _MIN = {"1m": 1, "5m": 5, "15m": 15, "1h": 60, "1d": 1440}
+
+    def __init__(self, interval: str = "5m", feed: str = "iex"):
+        self.interval = interval
         self.feed = feed  # "iex" is free; "sip" needs a paid data plan.
         self._last_ts: dict[str, pd.Timestamp] = {}
 
-    def latest_bars(self, symbol: str, lookback_minutes: int = 600) -> list[dict]:
-        start = (datetime.now(timezone.utc) - timedelta(minutes=lookback_minutes)).isoformat()
-        query = urlencode({
-            "timeframe": self.timeframe,
-            "start": start,
-            "feed": self.feed,
-            "limit": 1000,
-            "adjustment": "raw",
-        })
-        url = f"{DATA_BASE}/v2/stocks/{symbol}/bars?{query}"
-        payload = _request("GET", url)
-        out = []
-        for b in payload.get("bars", []) or []:
-            out.append({
-                "timestamp": pd.Timestamp(b["t"]),
-                "open": float(b["o"]),
-                "high": float(b["h"]),
-                "low": float(b["l"]),
-                "close": float(b["c"]),
-                "volume": float(b.get("v", 0.0)),
-            })
+    def _bars(self, symbol: str, timeframe: str, start_iso: str = None, limit: int = 1000) -> list[dict]:
+        out: list[dict] = []
+        token = None
+        while True:
+            params = {"timeframe": timeframe, "feed": self.feed, "limit": 10000, "adjustment": "raw"}
+            if start_iso:
+                params["start"] = start_iso
+            if token:
+                params["page_token"] = token
+            url = f"{DATA_BASE}/v2/stocks/{symbol}/bars?{urlencode(params)}"
+            payload = _request("GET", url)
+            for b in payload.get("bars", []) or []:
+                out.append({
+                    "timestamp": pd.Timestamp(b["t"]),
+                    "open": float(b["o"]), "high": float(b["h"]), "low": float(b["l"]),
+                    "close": float(b["c"]), "volume": float(b.get("v", 0.0)),
+                    "close_time": int(pd.Timestamp(b["t"]).value // 1_000_000),
+                })
+            token = payload.get("next_page_token")
+            if not token or len(out) >= limit:
+                break
         return out
 
+    def history(self, symbol: str, interval: str = None, days: int = 20) -> list[dict]:
+        tf = self._TF.get(interval or self.interval, "5Min")
+        start = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        return self._bars(symbol, tf, start_iso=start, limit=100000)
+
+    def get_klines(self, symbol: str, interval: str = None, limit: int = 300) -> list[dict]:
+        iv = interval or self.interval
+        tf = self._TF.get(iv, "5Min")
+        span = self._MIN.get(iv, 5) * (limit + 5)
+        start = (datetime.now(timezone.utc) - timedelta(minutes=span)).isoformat()
+        return self._bars(symbol, tf, start_iso=start, limit=limit)[-limit:]
+
+    def prime_seen(self, symbol: str, bars: list) -> None:
+        if bars:
+            self._last_ts[symbol] = bars[-1]["timestamp"]
+
     def new_closed_bars(self, symbol: str) -> list[dict]:
-        """Return only bars not seen before (dedup by timestamp)."""
-        bars = self.latest_bars(symbol)
+        bars = self.get_klines(symbol, self.interval, limit=5)
         last = self._last_ts.get(symbol)
         fresh = [b for b in bars if last is None or b["timestamp"] > last]
         if fresh:
