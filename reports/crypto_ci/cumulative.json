@@ -1,7 +1,37 @@
 {
   "variants": {
     "off": {
-      "trades": {},
+      "trades": {
+        "ETHUSDT:2026-07-22@13:30:john_wick": {
+          "symbol": "ETHUSDT",
+          "session": "2026-07-22@13:30",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-22T14:05:00+00:00",
+          "entry_time": "2026-07-22T14:10:00+00:00",
+          "exit_time": "2026-07-22T23:55:00+00:00",
+          "entry_price": 1940.979025,
+          "exit_price": 1934.25,
+          "stop_price": 1974.4269408354312,
+          "target_price": null,
+          "quantity": 0.14948614510395117,
+          "pnl": 0.658320178552813,
+          "r_multiple": 0.1316640357105626,
+          "exit_reason": "session_close",
+          "atr_fraction": 0.2584929698105218,
+          "status": "closed",
+          "leverage": 20.0,
+          "margin": 14.507473608743783,
+          "liquidation_price": 2028.323081125,
+          "notional": 290.14947217487565,
+          "fees": 0.3475758290053159,
+          "gross_pnl": 1.005896007558129,
+          "atr": 68.55118734172532,
+          "initial_stop": 1974.4269408354312,
+          "trail_extreme": 1921.0,
+          "breakeven_done": false
+        }
+      },
       "open": {}
     },
     "on": {
@@ -10,5 +40,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-17T05:05:15"
+  "updated": "2026-07-24T18:23:02"
 }

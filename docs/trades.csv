@@ -1,1 +1,2 @@
-
+symbol,session,side,signal_type,signal_time,entry_time,exit_time,entry_price,exit_price,stop_price,target_price,quantity,pnl,r_multiple,exit_reason,atr_fraction,status,leverage,margin,liquidation_price,notional,fees,gross_pnl,atr,initial_stop,trail_extreme,breakeven_done
+ETHUSDT,2026-07-22@13:30,short,john_wick,2026-07-22T14:05:00+00:00,2026-07-22T14:10:00+00:00,2026-07-22T23:55:00+00:00,1940.979025,1934.25,1974.4269408354312,,0.14948614510395117,0.658320178552813,0.1316640357105626,session_close,0.2584929698105218,closed,20.0,14.507473608743783,2028.323081125,290.14947217487565,0.3475758290053159,1.005896007558129,68.55118734172532,1974.4269408354312,1921.0,False
