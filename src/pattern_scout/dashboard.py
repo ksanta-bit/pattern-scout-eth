@@ -854,7 +854,8 @@ def _render_crypto(payload: dict) -> str:
        ].forEach(([color,price,lw,style],idx)=>{
          if(color==null||price==null||!isFinite(price))return;
          const ls=chart.addLineSeries({color:color,lineWidth:lw,lineStyle:style,
-           priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+           priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,
+           autoscaleInfoProvider:idx===3?(()=>null):undefined});
          ls.setData([{time:et,value:price},{time:xt,value:price}]);
          posSeriesAll.push(ls);
          if(idx<3)openLines.push({series:ls,et:et,price:price});
@@ -892,8 +893,8 @@ def _render_crypto(payload: dict) -> str:
      const hi=Math.max.apply(null,db.map(b=>b.high));
      const lo=Math.min.apply(null,db.map(b=>b.low));
      const t0=allBars[0].time,t1=allBars[allBars.length-1].time;
-     if(!dhi)dhi=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
-     if(!dlo)dlo=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(!dhi)dhi=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false,autoscaleInfoProvider:()=>null});
+     if(!dlo)dlo=chart.addLineSeries({color:'#9aa0a6',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false,autoscaleInfoProvider:()=>null});
      dhi.setData([{time:t0,value:hi},{time:t1,value:hi}]);
      dlo.setData([{time:t0,value:lo},{time:t1,value:lo}]);
    }
@@ -907,8 +908,8 @@ def _render_crypto(payload: dict) -> str:
    function drawPriorLevels(){
      const lv=(p.levels_by_symbol||{})[sym]; if(!lv||!allBars.length)return;
      const t0=allBars[0].time,t1=allBars[allBars.length-1].time;
-     if(!prh)prh=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
-     if(!prl)prl=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(!prh)prh=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false,autoscaleInfoProvider:()=>null});
+     if(!prl)prl=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false,autoscaleInfoProvider:()=>null});
      if(lv.pdh)prh.setData([{time:t0,value:lv.pdh},{time:t1,value:lv.pdh}]);
      if(lv.pdl)prl.setData([{time:t0,value:lv.pdl},{time:t1,value:lv.pdl}]);
    }
