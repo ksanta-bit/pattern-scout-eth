@@ -244,9 +244,12 @@ class AlpacaDataFeed:
     def get_klines(self, symbol: str, interval: str = None, limit: int = 300) -> list[dict]:
         iv = interval or self.interval
         tf = self._TF.get(iv, "5Min")
-        span = self._MIN.get(iv, 5) * (limit + 5)
+        # Look back far enough to always reach the LAST trading session, even when
+        # called off-hours (nights/weekends have no bars, so a tight window returns
+        # nothing). Floor at ~6 calendar days, then keep the most recent `limit` bars.
+        span = max(self._MIN.get(iv, 5) * (limit + 5), 6 * 24 * 60)
         start = (datetime.now(timezone.utc) - timedelta(minutes=span)).isoformat()
-        return self._bars(symbol, tf, start_iso=start, limit=limit)[-limit:]
+        return self._bars(symbol, tf, start_iso=start, limit=100000)[-limit:]
 
     def prime_seen(self, symbol: str, bars: list) -> None:
         if bars:

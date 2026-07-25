@@ -675,12 +675,13 @@ def _render_crypto(payload: dict) -> str:
  const p=JSON.parse(document.getElementById('payload').textContent);
  const WF=p.workflow||'paper-crypto.yml';
  const CCY=p.currency||'USDT';
+ const NS=(p.kind||'crypto')+'_';   // namespace localStorage so crypto/stocks don't clash (same origin)
  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
  const num=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2});
  const q4=new Intl.NumberFormat('it-IT',{maximumFractionDigits:4});
  const cap=Number(p.starting_capital)||100;
  const V=p.variants||{off:{},on:{}};
- let cur=localStorage.getItem('ps_variant')||(p.default_variant||'off');
+ let cur=localStorage.getItem(NS+'ps_variant')||(p.default_variant||'off');
  if(!V[cur])cur=(V.off?'off':'on');
  let closed=[],opens=[];
  function loadVariant(){const d=V[cur]||{};closed=(d.closed||[]);opens=(d.open||[]);}
@@ -700,7 +701,7 @@ def _render_crypto(payload: dict) -> str:
    const lines=(p.bot_log||[]);
    bl.textContent=lines.length?lines.join('\\n'):'Nessun evento nell\\'ultimo giro (in attesa di dati o di un setup).';}})();
 
- function baseKey(){return 'psbase_'+cur;}
+ function baseKey(){return 'psbase_'+NS+cur;}
  function baseline(){const v=localStorage.getItem(baseKey());return v?JSON.parse(v):{count:0,capital:cap};}
  function applyBaseline(){
    const b=baseline();
@@ -760,7 +761,7 @@ def _render_crypto(payload: dict) -> str:
  });
  document.getElementById('filterToggle').addEventListener('click',()=>{
    cur=(cur==='on')?'off':'on';
-   localStorage.setItem('ps_variant',cur);
+   localStorage.setItem(NS+'ps_variant',cur);
    loadVariant();syncFilterUI();applyBaseline();
    if(window.__redrawPositions)window.__redrawPositions();
  });
@@ -825,7 +826,7 @@ def _render_crypto(payload: dict) -> str:
    const symSel=document.getElementById('chartSym');
    const symList=(p.symbols&&p.symbols.length?p.symbols:[sym]);
    if(symSel){symSel.innerHTML=symList.map(s=>'<option'+(s===sym?' selected':'')+'>'+s+'</option>').join('');}
-   function setTitle(){document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym+' (Bitget · ora italiana)';}
+   function setTitle(){document.getElementById('chartTitle').textContent='Grafico 1 minuto — '+sym+' ('+(p.kind==='stocks'?'Alpaca':'Bitget')+' · ora italiana)';}
    setTitle();
    if(!window.LightweightCharts){
      el.innerHTML='<div class="empty" style="padding:40px">Libreria grafico non caricata (riprova con la rete attiva).</div>';
