@@ -1,7 +1,66 @@
 {
   "variants": {
     "off": {
-      "trades": {},
+      "trades": {
+        "AAPL:2026-07-24:power_tower": {
+          "symbol": "AAPL",
+          "session": "2026-07-24",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-24T09:50:00-04:00",
+          "entry_time": "2026-07-24T09:50:00-04:00",
+          "exit_time": "2026-07-24T10:37:00-04:00",
+          "entry_price": 326.4771915,
+          "exit_price": 329.5217038452254,
+          "stop_price": 329.4558126826889,
+          "target_price": 321.66,
+          "quantity": 6.714516137948615,
+          "pnl": -20.442427274199538,
+          "r_multiple": -1.0221213637099769,
+          "exit_reason": "stop",
+          "atr_fraction": 0.5888107617592504,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 548.0340927497226,
+          "liquidation_price": 408.09648937500003,
+          "notional": 2192.1363709988905,
+          "fees": 0.0,
+          "gross_pnl": -20.442427274199538,
+          "atr": 7.328330730755717,
+          "initial_stop": 329.4558126826889,
+          "trail_extreme": 326.29,
+          "breakeven_done": false
+        },
+        "TSLA:2026-07-24:power_tower": {
+          "symbol": "TSLA",
+          "session": "2026-07-24",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-24T09:55:00-04:00",
+          "entry_time": "2026-07-24T09:55:00-04:00",
+          "exit_time": "2026-07-24T11:20:00-04:00",
+          "entry_price": 316.253238,
+          "exit_price": 308.47184017565985,
+          "stop_price": 308.53354688503686,
+          "target_price": 322.87,
+          "quantity": 2.590777234756686,
+          "pnl": -20.159868337885694,
+          "r_multiple": -1.0079934168942848,
+          "exit_reason": "stop",
+          "atr_fraction": 0.2673821479588569,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 204.83542235712204,
+          "liquidation_price": 237.1899285,
+          "notional": 819.3416894284882,
+          "fees": 0.0,
+          "gross_pnl": -20.159868337885694,
+          "atr": 22.477192459852528,
+          "initial_stop": 308.53354688503686,
+          "trail_extreme": 317.1,
+          "breakeven_done": false
+        }
+      },
       "open": {
         "GLD:2026-07-24:john_wick": {
           "symbol": "GLD",
@@ -43,5 +102,5 @@
     }
   },
   "starting_capital": 2000.0,
-  "updated": "2026-07-25T08:24:19"
+  "updated": "2026-07-25T08:27:10"
 }
