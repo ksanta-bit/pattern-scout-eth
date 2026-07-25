@@ -20,11 +20,16 @@
  button{font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--border);
   background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
  button.secondary{background:var(--card);color:var(--fg)}
- .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
- .card{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:14px}
- .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
- .value{margin-top:6px;font-size:24px;font-weight:700}
+ .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+ .card{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:14px;
+   background:linear-gradient(160deg,color-mix(in srgb,Canvas 90%,CanvasText 10%),var(--card));
+   padding:16px 16px 14px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+ .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.5}
+ .card.good::before{background:var(--good);opacity:.9}.card.bad::before{background:var(--bad);opacity:.9}
+ .label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+ .value{margin-top:8px;font-size:27px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
  .value.good{color:var(--good)}.value.bad{color:var(--bad)}
+ .value small{font-size:14px;font-weight:600;opacity:.75;margin-left:4px}
  h2{font-size:15px;margin:20px 0 8px}
  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
  table{width:100%;min-width:720px;border-collapse:collapse;font-size:13px}
@@ -45,6 +50,8 @@
  .side-tag{font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px}
  .side-tag.long{background:color-mix(in srgb,var(--good) 22%,var(--card));color:var(--good)}
  .side-tag.short{background:color-mix(in srgb,var(--bad) 22%,var(--card));color:var(--bad)}
+ .zb{font-size:12px;padding:4px 9px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer;font-weight:600}
+ .zb:hover{border-color:var(--accent)} .zb.act{background:var(--accent);color:#fff;border-color:var(--accent)}
  @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}#chart{height:320px}}
 </style>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
@@ -73,7 +80,7 @@
        <option value="0.05">5%</option><option value="0.10">10% (aggressivo)</option></select></label>
      <label>Sessioni<br><select id="set_sess">
        <option value="keep">— invariate —</option><option value="daily">24h (00:00)</option>
-       <option value="three">3 sessioni (00/08/13:30)</option><option value="us">US (13:30)</option></select></label>
+       <option value="three">3 sessioni (00/08/13:30)</option><option value="five">5 sessioni (00/06/08/13:30/18)</option><option value="us">US (13:30)</option></select></label>
      <label>Simboli<br>
        <span style="display:inline-flex;gap:10px;flex-wrap:wrap">
        <label style="font-weight:400"><input type="checkbox" class="set_sym" value="ETHUSDT"> ETH</label>
@@ -104,13 +111,20 @@
  </details>
  <section class="grid">
    <div class="card"><div class="label">Capitale iniziale</div><div class="value" id="cap">100</div></div>
-   <div class="card"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
-   <div class="card"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
-   <div class="card"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
+   <div class="card" id="cardEq"><div class="label">Equity (realizzato)</div><div class="value" id="eq">100</div></div>
+   <div class="card" id="cardEqU"><div class="label">Equity + aperte</div><div class="value" id="eqU">100</div></div>
+   <div class="card" id="cardPnl"><div class="label">PnL totale</div><div class="value" id="pnl">0</div></div>
  </section>
  <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
    <span id="chartTitle">Grafico 1 minuto</span>
    <select id="chartSym" style="font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg)"></select>
+   <span id="zoomBar" style="display:inline-flex;gap:4px;margin-left:auto">
+     <button class="zb" data-z="30">30m</button>
+     <button class="zb" data-z="120">2h</button>
+     <button class="zb" data-z="360">6h</button>
+     <button class="zb" data-z="0">Tutto</button>
+     <button class="zb" data-z="auto" title="Adatta prezzo e tempo">Auto</button>
+   </span>
  </h2>
  <div id="chart"></div>
  <div class="legend" id="legend">
@@ -139,7 +153,7 @@
    <code>daily_filter</code>) o cambiando <code>daily_context.enabled</code> in <code>config.crypto.json</code>.
  </div>
 </main>
-<script id="payload" type="application/json">{"starting_capital": 2000.0, "variants": {"off": {"closed": [], "open": [], "equity": 2000.0, "unrealized": 0, "equity_incl_unrealized": 2000.0, "summary": {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0.0, "total_pnl": 0, "avg_r": 0.0, "profit_factor": 0.0}}, "on": {"closed": [], "open": [], "equity": 2000.0, "unrealized": 0, "equity_incl_unrealized": 2000.0, "summary": {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0.0, "total_pnl": 0, "avg_r": 0.0, "profit_factor": 0.0}}}, "default_variant": "off", "chart_symbol": "ETHUSDT", "candles": [], "bot_log": ["[ETHUSDT] 1m history error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "[BTCUSDT] 1m history error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "Crypto paper-live | exchange=binance interval=5m symbols=ETHUSDT | sizing equity 2000.00", "[ETHUSDT] history error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "[ETHUSDT] warmed up with 0 bars.", "[ETHUSDT] poll error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "Crypto paper-live | exchange=binance interval=5m symbols=BTCUSDT | sizing equity 2000.00", "[BTCUSDT] history error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "[BTCUSDT] warmed up with 0 bars.", "[BTCUSDT] poll error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "[ETHUSDT] 1m chart fetch error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "[BTCUSDT] 1m chart fetch error: Missing Alpaca paper credentials. Set them first:\n  export ALPACA_API_KEY_ID=...\n  export ALPACA_API_SECRET_KEY=...\nCreate a free paper key at https://app.alpaca.markets (Paper Trading).", "CI pass complete [off]. Closed: 0 | open: 0 | equity 2000.00"], "leverage": 20.0, "repo": "ksanta-bit/pattern-scout-eth", "symbols": ["ETHUSDT", "BTCUSDT"], "candles_by_symbol": {"ETHUSDT": [], "BTCUSDT": []}, "updated": "24/07/2026 20:49"}</script>
+<script id="payload" type="application/json">{"starting_capital": 2000.0, "variants": {"off": {"closed": [], "open": [], "equity": 2000.0, "unrealized": 0, "equity_incl_unrealized": 2000.0, "summary": {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0.0, "total_pnl": 0, "avg_r": 0.0, "profit_factor": 0.0}}, "on": {"closed": [], "open": [], "equity": 2000.0, "unrealized": 0, "equity_incl_unrealized": 2000.0, "summary": {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0.0, "total_pnl": 0, "avg_r": 0.0, "profit_factor": 0.0}}}, "default_variant": "off", "chart_symbol": "ETHUSDT", "candles": [], "bot_log": ["Crypto paper-live | exchange=binance interval=5m symbols=ETHUSDT | sizing equity 2000.00", "[ETHUSDT] warmed up with 0 bars.", "Crypto paper-live | exchange=binance interval=5m symbols=SOLUSDT | sizing equity 2000.00", "[SOLUSDT] warmed up with 0 bars.", "Crypto paper-live | exchange=binance interval=5m symbols=BTCUSDT | sizing equity 2000.00", "[BTCUSDT] warmed up with 0 bars.", "CI pass complete [off]. Closed: 0 | open: 0 | equity 2000.00"], "leverage": 30.0, "repo": "ksanta-bit/pattern-scout-eth", "symbols": ["ETHUSDT", "SOLUSDT", "BTCUSDT"], "candles_by_symbol": {"ETHUSDT": [], "SOLUSDT": [], "BTCUSDT": []}, "levels_by_symbol": {}, "updated": "25/07/2026 08:14"}</script>
 <script>
  const p=JSON.parse(document.getElementById('payload').textContent);
  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
@@ -176,11 +190,15 @@
    const unreal=opens.reduce((a,t)=>a+(Number(t.unrealized_pnl)||0),0);
    const eq=b.capital+realized;
    document.getElementById('cap').textContent=money.format(b.capital);
-   document.getElementById('eq').textContent=money.format(eq);
-   const eqU=document.getElementById('eqU');eqU.textContent=money.format(eq+unreal);
-   eqU.className='value '+((eq+unreal)>=b.capital?'good':'bad');
-   const tp=document.getElementById('pnl');tp.textContent=money.format(realized);
-   tp.className='value '+(realized>0?'good':realized<0?'bad':'');
+   const pct=(x)=>(b.capital?((x/b.capital*100)>=0?'+':'')+ (x/b.capital*100).toFixed(1)+'%':'');
+   const eqEl=document.getElementById('eq');eqEl.innerHTML=money.format(eq)+' <small>'+pct(eq-b.capital)+'</small>';
+   const eqU=document.getElementById('eqU');eqU.innerHTML=money.format(eq+unreal)+' <small>'+pct(eq+unreal-b.capital)+'</small>';
+   const tp=document.getElementById('pnl');tp.innerHTML=money.format(realized)+' <small>'+pct(realized)+'</small>';
+   const cls=(el,v)=>{el.classList.remove('good','bad');if(v>0)el.classList.add('good');else if(v<0)el.classList.add('bad');};
+   cls(document.getElementById('cardEq'),eq-b.capital);
+   cls(document.getElementById('cardEqU'),eq+unreal-b.capital);
+   cls(document.getElementById('cardPnl'),realized);
+   cls(eqEl,eq-b.capital);cls(eqU,eq+unreal-b.capital);cls(tp,realized);
    document.getElementById('openCount').textContent=opens.length?`(${opens.length} live)`:'';
    document.getElementById('openRows').innerHTML=opens.map(t=>{
      const u=Number(t.unrealized_pnl)||0;
@@ -325,32 +343,40 @@
    window.__redrawPositions=function(){clearPositions();if(seeded)drawPositions();};
    function drawPositions(){
      const markers=[];
-     const pos=[].concat(
-       opens.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:true})),
-       closed.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:false}))
-     );
-     pos.forEach(t=>{
+     const t0=allBars.length?allBars[0].time:0;
+     // Horizontal lines ONLY for OPEN positions (avoids stale full-width lines from old
+     // closed trades). Closed trades live in the table + optional markers if on-screen.
+     opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
        const isLong=(t.side==='long');
        const et=Math.floor(Date.parse(t.entry_time)/1000);
        if(!isFinite(et))return;
-       let xt=t.exit_time?Math.floor(Date.parse(t.exit_time)/1000):(lastTime||et+60);
-       if(xt<=et)xt=et+60;
-       [['#2962ff',+t.entry_price,2,LightweightCharts.LineStyle.Solid],      // entry
-        ['#e5393b',+t.stop_price,2,LightweightCharts.LineStyle.Dashed],       // SL
-        [t.target_price!=null?'#26a65b':null,t.target_price!=null?+t.target_price:null,2,LightweightCharts.LineStyle.Dashed], // TP
-        ['#b26a00',t.liquidation_price!=null?+t.liquidation_price:null,1,LightweightCharts.LineStyle.Dotted] // liq
+       const xt=(lastTime||et+60);
+       [['#2962ff',+t.entry_price,2,LightweightCharts.LineStyle.Solid],
+        ['#e5393b',+t.stop_price,2,LightweightCharts.LineStyle.Dashed],
+        [t.target_price!=null?'#26a65b':null,t.target_price!=null?+t.target_price:null,2,LightweightCharts.LineStyle.Dashed],
+        ['#b26a00',t.liquidation_price!=null?+t.liquidation_price:null,1,LightweightCharts.LineStyle.Dotted]
        ].forEach(([color,price,lw,style],idx)=>{
          if(color==null||price==null||!isFinite(price))return;
          const ls=chart.addLineSeries({color:color,lineWidth:lw,lineStyle:style,
            priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
          ls.setData([{time:et,value:price},{time:xt,value:price}]);
          posSeriesAll.push(ls);
-         if(t.isOpen&&idx<3)openLines.push({series:ls,et:et,price:price});
+         if(idx<3)openLines.push({series:ls,et:et,price:price});
        });
        markers.push({time:et,position:isLong?'belowBar':'aboveBar',
          color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
          text:(isLong?'LONG':'SHORT')+' @'+(+t.entry_price).toFixed(2)});
-       if(t.exit_time)markers.push({time:xt,position:isLong?'aboveBar':'belowBar',
+     });
+     // Markers only (no lines) for closed trades whose entry is within the visible window.
+     closed.filter(t=>(t.symbol||'')===sym).forEach(t=>{
+       const isLong=(t.side==='long');
+       const et=Math.floor(Date.parse(t.entry_time)/1000);
+       if(!isFinite(et)||et<t0)return;
+       markers.push({time:et,position:isLong?'belowBar':'aboveBar',
+         color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
+         text:(isLong?'LONG':'SHORT')});
+       const xt=t.exit_time?Math.floor(Date.parse(t.exit_time)/1000):null;
+       if(xt&&xt>=t0)markers.push({time:xt,position:isLong?'aboveBar':'belowBar',
          color:'#888',shape:'circle',text:'EXIT'});
      });
      if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
@@ -377,7 +403,19 @@
    }
 
    const lg2=document.getElementById('legend');
-   if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>');
+   if(lg2)lg2.insertAdjacentHTML('beforeend','<span><span class="dot" style="background:#9aa0a6"></span>Max/Min giorno</span>'+
+     '<span><span class="dot" style="background:#c9a227"></span>RH/RL (giorno prima)</span>');
+
+   // --- Prior-day High/Low (video 3: RH/RL) reference lines ---
+   let prh=null,prl=null;
+   function drawPriorLevels(){
+     const lv=(p.levels_by_symbol||{})[sym]; if(!lv||!allBars.length)return;
+     const t0=allBars[0].time,t1=allBars[allBars.length-1].time;
+     if(!prh)prh=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(!prl)prl=chart.addLineSeries({color:'#c9a227',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:true,crosshairMarkerVisible:false});
+     if(lv.pdh)prh.setData([{time:t0,value:lv.pdh},{time:t1,value:lv.pdh}]);
+     if(lv.pdl)prl.setData([{time:t0,value:lv.pdl},{time:t1,value:lv.pdl}]);
+   }
 
    // positions + daily lines are drawn by the first tick() (avoids duplicates)
    new ResizeObserver(()=>chart.timeScale().fitContent()).observe(el);
@@ -425,9 +463,10 @@
      if(!seeded||bigGap)allBars=bars.slice(); else mergeBars(bars);
      series.setData(allBars);                                 // contiguous, no fragments
      lastTime=allBars[allBars.length-1].time;
-     if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();chart.timeScale().fitContent();}
+     if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();
+       chart.timeScale().fitContent();if(typeof setZoom==='function')setZoom('120');}
      if(!posDrawn){drawPositions();posDrawn=true;}
-     growOpenLines();drawDailyHL();
+     growOpenLines();drawDailyHL();drawPriorLevels();
      const last=allBars[allBars.length-1];
      document.getElementById('updated').textContent=
        'Prezzo live '+sym+' (Bitget): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2})+
@@ -435,12 +474,23 @@
    }
    tick(); setInterval(tick,60000);
 
+   // --- Zoom selectors + autozoom ---
+   function setZoom(z){
+     const ts=chart.timeScale();
+     chart.priceScale('right').applyOptions({autoScale:true});
+     if(z==='auto'||z==='0'){ts.fitContent();}
+     else{const n=+z,total=allBars.length; if(total)ts.setVisibleLogicalRange({from:Math.max(0,total-n),to:total+2});}
+     document.querySelectorAll('.zb').forEach(b=>b.classList.toggle('act',b.dataset.z===z));
+   }
+   document.querySelectorAll('.zb').forEach(b=>b.addEventListener('click',()=>setZoom(b.dataset.z)));
+
    // Switch the displayed symbol (data-only; all symbols keep trading server-side).
    const byS=p.candles_by_symbol||{};
    if(symSel){symSel.addEventListener('change',()=>{
      sym=symSel.value; setTitle();
      lastTime=0; posDrawn=false;
      if(dhi)dhi.setData([]); if(dlo)dlo.setData([]);
+     if(prh)prh.setData([]); if(prl)prl.setData([]);
      if(window.__redrawPositions)window.__redrawPositions();
      const emb=byS[sym]||[];
      if(emb.length){
@@ -448,7 +498,7 @@
        allBars=emb.slice(); seeded=true; series.setData(allBars);
        lastTime=allBars[allBars.length-1].time;
        const w=document.getElementById('chartWait'); if(w)w.remove();
-       posDrawn=true; drawPositions(); drawDailyHL(); chart.timeScale().fitContent();
+       posDrawn=true; drawPositions(); drawDailyHL(); drawPriorLevels(); chart.timeScale().fitContent();
      }else{
        allBars=[]; seeded=false; candles=[]; series.setData([]);
        el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico '+sym+'…</div>');
