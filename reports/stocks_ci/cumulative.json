@@ -2,7 +2,40 @@
   "variants": {
     "off": {
       "trades": {},
-      "open": {}
+      "open": {
+        "GLD:2026-07-24:john_wick": {
+          "symbol": "GLD",
+          "session": "2026-07-24",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-24T10:30:00-04:00",
+          "entry_time": "2026-07-24T10:40:00-04:00",
+          "exit_time": null,
+          "entry_price": 372.865412,
+          "exit_price": null,
+          "stop_price": 374.76561014033075,
+          "target_price": 371.13,
+          "quantity": 10.525218173573572,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.1781838029073286,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 981.1224526698494,
+          "liquidation_price": 466.081765,
+          "notional": 3924.4898106793976,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 5.556060561323282,
+          "initial_stop": 374.76561014033075,
+          "trail_extreme": 371.5,
+          "breakeven_done": false,
+          "current_price": 371.87,
+          "unrealized_pnl": 10.476928472593086,
+          "unrealized_r": 0.5238464236296543
+        }
+      }
     },
     "on": {
       "trades": {},
@@ -10,5 +43,5 @@
     }
   },
   "starting_capital": 2000.0,
-  "updated": "2026-07-25T08:19:43"
+  "updated": "2026-07-25T08:24:19"
 }
