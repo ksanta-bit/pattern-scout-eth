@@ -64,7 +64,7 @@
     "account_size": 100.0,
     "risk_fraction": 0.02,
     "fixed_quantity": null,
-    "fixed_risk_usd": 20.0,
+    "fixed_risk_usd": null,
     "point_value": 1.0,
     "leverage": 4.0,
     "sizing_mode": "risk",
