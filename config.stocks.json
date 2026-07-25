@@ -61,7 +61,7 @@
     "use_fixed_target": true
   },
   "risk": {
-    "account_size": 2000.0,
+    "account_size": 100.0,
     "risk_fraction": 0.02,
     "fixed_quantity": null,
     "fixed_risk_usd": 20.0,
