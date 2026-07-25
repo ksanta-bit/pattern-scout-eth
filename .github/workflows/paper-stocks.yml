@@ -50,6 +50,7 @@ jobs:
             --symbols SPY,QQQ,GLD \
             --exchange alpaca \
             --config config.stocks.json \
+            --settings bot_settings.stocks.json \
             --lookback-days 20 \
             --out docs/stocks \
             --cumulative reports/stocks_ci/cumulative.json
