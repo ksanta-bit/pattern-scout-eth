@@ -546,6 +546,8 @@ def _render_crypto(payload: dict) -> str:
  .side-tag{font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px}
  .side-tag.long{background:color-mix(in srgb,var(--good) 22%,var(--card));color:var(--good)}
  .side-tag.short{background:color-mix(in srgb,var(--bad) 22%,var(--card));color:var(--bad)}
+ .zb{font-size:12px;padding:4px 9px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer;font-weight:600}
+ .zb:hover{border-color:var(--accent)} .zb.act{background:var(--accent);color:#fff;border-color:var(--accent)}
  @media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}#chart{height:320px}}
 </style>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
@@ -574,7 +576,7 @@ def _render_crypto(payload: dict) -> str:
        <option value="0.05">5%</option><option value="0.10">10% (aggressivo)</option></select></label>
      <label>Sessioni<br><select id="set_sess">
        <option value="keep">— invariate —</option><option value="daily">24h (00:00)</option>
-       <option value="three">3 sessioni (00/08/13:30)</option><option value="us">US (13:30)</option></select></label>
+       <option value="three">3 sessioni (00/08/13:30)</option><option value="five">5 sessioni (00/06/08/13:30/18)</option><option value="us">US (13:30)</option></select></label>
      <label>Simboli<br>
        <span style="display:inline-flex;gap:10px;flex-wrap:wrap">
        <label style="font-weight:400"><input type="checkbox" class="set_sym" value="ETHUSDT"> ETH</label>
@@ -612,6 +614,13 @@ def _render_crypto(payload: dict) -> str:
  <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
    <span id="chartTitle">Grafico 1 minuto</span>
    <select id="chartSym" style="font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg)"></select>
+   <span id="zoomBar" style="display:inline-flex;gap:4px;margin-left:auto">
+     <button class="zb" data-z="30">30m</button>
+     <button class="zb" data-z="120">2h</button>
+     <button class="zb" data-z="360">6h</button>
+     <button class="zb" data-z="0">Tutto</button>
+     <button class="zb" data-z="auto" title="Adatta prezzo e tempo">Auto</button>
+   </span>
  </h2>
  <div id="chart"></div>
  <div class="legend" id="legend">
@@ -830,32 +839,40 @@ def _render_crypto(payload: dict) -> str:
    window.__redrawPositions=function(){clearPositions();if(seeded)drawPositions();};
    function drawPositions(){
      const markers=[];
-     const pos=[].concat(
-       opens.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:true})),
-       closed.filter(t=>(t.symbol||'')===sym).map(t=>Object.assign({},t,{isOpen:false}))
-     );
-     pos.forEach(t=>{
+     const t0=allBars.length?allBars[0].time:0;
+     // Horizontal lines ONLY for OPEN positions (avoids stale full-width lines from old
+     // closed trades). Closed trades live in the table + optional markers if on-screen.
+     opens.filter(t=>(t.symbol||'')===sym).forEach(t=>{
        const isLong=(t.side==='long');
        const et=Math.floor(Date.parse(t.entry_time)/1000);
        if(!isFinite(et))return;
-       let xt=t.exit_time?Math.floor(Date.parse(t.exit_time)/1000):(lastTime||et+60);
-       if(xt<=et)xt=et+60;
-       [['#2962ff',+t.entry_price,2,LightweightCharts.LineStyle.Solid],      // entry
-        ['#e5393b',+t.stop_price,2,LightweightCharts.LineStyle.Dashed],       // SL
-        [t.target_price!=null?'#26a65b':null,t.target_price!=null?+t.target_price:null,2,LightweightCharts.LineStyle.Dashed], // TP
-        ['#b26a00',t.liquidation_price!=null?+t.liquidation_price:null,1,LightweightCharts.LineStyle.Dotted] // liq
+       const xt=(lastTime||et+60);
+       [['#2962ff',+t.entry_price,2,LightweightCharts.LineStyle.Solid],
+        ['#e5393b',+t.stop_price,2,LightweightCharts.LineStyle.Dashed],
+        [t.target_price!=null?'#26a65b':null,t.target_price!=null?+t.target_price:null,2,LightweightCharts.LineStyle.Dashed],
+        ['#b26a00',t.liquidation_price!=null?+t.liquidation_price:null,1,LightweightCharts.LineStyle.Dotted]
        ].forEach(([color,price,lw,style],idx)=>{
          if(color==null||price==null||!isFinite(price))return;
          const ls=chart.addLineSeries({color:color,lineWidth:lw,lineStyle:style,
            priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
          ls.setData([{time:et,value:price},{time:xt,value:price}]);
          posSeriesAll.push(ls);
-         if(t.isOpen&&idx<3)openLines.push({series:ls,et:et,price:price});
+         if(idx<3)openLines.push({series:ls,et:et,price:price});
        });
        markers.push({time:et,position:isLong?'belowBar':'aboveBar',
          color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
          text:(isLong?'LONG':'SHORT')+' @'+(+t.entry_price).toFixed(2)});
-       if(t.exit_time)markers.push({time:xt,position:isLong?'aboveBar':'belowBar',
+     });
+     // Markers only (no lines) for closed trades whose entry is within the visible window.
+     closed.filter(t=>(t.symbol||'')===sym).forEach(t=>{
+       const isLong=(t.side==='long');
+       const et=Math.floor(Date.parse(t.entry_time)/1000);
+       if(!isFinite(et)||et<t0)return;
+       markers.push({time:et,position:isLong?'belowBar':'aboveBar',
+         color:isLong?'#26a65b':'#e5393b',shape:isLong?'arrowUp':'arrowDown',
+         text:(isLong?'LONG':'SHORT')});
+       const xt=t.exit_time?Math.floor(Date.parse(t.exit_time)/1000):null;
+       if(xt&&xt>=t0)markers.push({time:xt,position:isLong?'aboveBar':'belowBar',
          color:'#888',shape:'circle',text:'EXIT'});
      });
      if(markers.length)series.setMarkers(markers.sort((a,b)=>a.time-b.time));
@@ -942,7 +959,8 @@ def _render_crypto(payload: dict) -> str:
      if(!seeded||bigGap)allBars=bars.slice(); else mergeBars(bars);
      series.setData(allBars);                                 // contiguous, no fragments
      lastTime=allBars[allBars.length-1].time;
-     if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();chart.timeScale().fitContent();}
+     if(!seeded){seeded=true;const w=document.getElementById('chartWait');if(w)w.remove();
+       chart.timeScale().fitContent();if(typeof setZoom==='function')setZoom('120');}
      if(!posDrawn){drawPositions();posDrawn=true;}
      growOpenLines();drawDailyHL();drawPriorLevels();
      const last=allBars[allBars.length-1];
@@ -951,6 +969,16 @@ def _render_crypto(payload: dict) -> str:
        ' · '+tHM.format(Date.now());
    }
    tick(); setInterval(tick,60000);
+
+   // --- Zoom selectors + autozoom ---
+   function setZoom(z){
+     const ts=chart.timeScale();
+     chart.priceScale('right').applyOptions({autoScale:true});
+     if(z==='auto'||z==='0'){ts.fitContent();}
+     else{const n=+z,total=allBars.length; if(total)ts.setVisibleLogicalRange({from:Math.max(0,total-n),to:total+2});}
+     document.querySelectorAll('.zb').forEach(b=>b.classList.toggle('act',b.dataset.z===z));
+   }
+   document.querySelectorAll('.zb').forEach(b=>b.addEventListener('click',()=>setZoom(b.dataset.z)));
 
    // Switch the displayed symbol (data-only; all symbols keep trading server-side).
    const byS=p.candles_by_symbol||{};

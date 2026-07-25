@@ -215,6 +215,7 @@ def run_paper_crypto(args: argparse.Namespace) -> None:
     SESSION_PRESETS = {
         "daily": ["00:00"],
         "three": ["00:00", "08:00", "13:30"],
+        "five": ["00:00", "06:00", "08:00", "13:30", "18:00"],
         "us": ["13:30"],
     }
     settings_path = Path(args.settings) if args.settings else None
