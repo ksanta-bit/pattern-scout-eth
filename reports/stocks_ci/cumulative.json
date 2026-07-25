@@ -59,9 +59,7 @@
           "initial_stop": 308.53354688503686,
           "trail_extreme": 317.1,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "GLD:2026-07-24:john_wick": {
           "symbol": "GLD",
           "session": "2026-07-24",
@@ -69,32 +67,30 @@
           "signal_type": "john_wick",
           "signal_time": "2026-07-24T10:30:00-04:00",
           "entry_time": "2026-07-24T10:40:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-07-24T16:00:00+00:00",
           "entry_price": 372.865412,
-          "exit_price": null,
+          "exit_price": 373.96,
           "stop_price": 374.76561014033075,
           "target_price": 371.13,
           "quantity": 1.072773143141526,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -1.1742446092049832,
+          "r_multiple": -0.5760388755087709,
+          "exit_reason": "session_close",
           "atr_fraction": 0.1781838029073286,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 100.00000000000001,
           "liquidation_price": 466.081765,
           "notional": 400.00000000000006,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -1.1742446092049832,
           "atr": 5.556060561323282,
           "initial_stop": 374.76561014033075,
           "trail_extreme": 371.5,
-          "breakeven_done": false,
-          "current_price": 371.87,
-          "unrealized_pnl": 1.0678512599607792,
-          "unrealized_r": 0.5238464236296543
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {},
@@ -102,5 +98,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-25T13:04:39"
+  "updated": "2026-07-25T13:35:23"
 }
