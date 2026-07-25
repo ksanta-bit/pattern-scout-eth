@@ -493,6 +493,33 @@ def build_crypto_dashboard(output_path: str | Path, starting_capital: float,
 
 
 def _render_crypto(payload: dict) -> str:
+    # --- Recognisable crypto vs stocks branding, derived from the traded symbols ---
+    _syms = [str(s).upper() for s in (payload.get("symbols") or [])]
+    _is_crypto = (not _syms) or any(s.endswith("USDT") for s in _syms)
+    _kind = "crypto" if _is_crypto else "stocks"
+    _ccy = "USDT" if _is_crypto else "$"
+    _brand = "Paper Crypto" if _is_crypto else "Paper Stocks"
+    _wf = "paper-crypto.yml" if _is_crypto else "paper-stocks.yml"
+    _cfg = "config.crypto.json" if _is_crypto else "config.stocks.json"
+    try:
+        _startn = int(round(float(payload.get("starting_capital") or 0)))
+    except (TypeError, ValueError):
+        _startn = 0
+    _resetcap = f"{_startn} {_ccy}"
+    # Symbol checkboxes for the settings panel (different universe per asset class).
+    if _is_crypto:
+        _sym_opts = [("ETHUSDT", "ETH"), ("BTCUSDT", "BTC"), ("SOLUSDT", "SOL"),
+                     ("DOGEUSDT", "DOGE"), ("BNBUSDT", "BNB"), ("PAXGUSDT", "Oro (PAXG)")]
+    else:
+        _sym_opts = [("SPY", "SPY"), ("QQQ", "QQQ"), ("AAPL", "AAPL"),
+                     ("NVDA", "NVDA"), ("TSLA", "TSLA"), ("GLD", "GLD")]
+    _syms_html = "\n       ".join(
+        f'<label style="font-weight:400"><input type="checkbox" class="set_sym" value="{v}"> {lbl}</label>'
+        for v, lbl in _sym_opts)
+    payload = dict(payload)
+    payload["kind"] = _kind
+    payload["currency"] = _ccy
+    payload["workflow"] = _wf
     data = json.dumps(payload, ensure_ascii=False, allow_nan=False)
     html = """<!doctype html>
 <html lang="it"><head><meta charset="utf-8">
@@ -500,7 +527,7 @@ def _render_crypto(payload: dict) -> str:
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Pattern Scout — Paper ETH</title>
+<title>Pattern Scout — __BRAND__</title>
 <style>
  :root{color-scheme:light dark;--bg:Canvas;--fg:CanvasText;
   --muted:color-mix(in srgb,CanvasText 62%,Canvas 38%);
@@ -553,11 +580,11 @@ def _render_crypto(payload: dict) -> str:
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 </head><body><main>
  <header>
-   <div><h1><span class="live"></span>Pattern Scout — Paper ETH</h1>
+   <div><h1><span class="live"></span>Pattern Scout — __BRAND__</h1>
      <div class="sub" id="filterStatus"></div></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap">
      <button id="filterToggle" title="Attiva/disattiva il filtro daily (breakout+retest)">Filtro daily: —</button>
-     <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a 100 USDT">↺ Ripristina 100 USDT</button>
+     <button id="resetBtn" class="secondary" title="Riporta il capitale visualizzato a __RESETCAP__">↺ Ripristina __RESETCAP__</button>
    </div>
  </header>
  <div class="sub" id="updated"></div>
@@ -579,14 +606,9 @@ def _render_crypto(payload: dict) -> str:
        <option value="three">3 sessioni (00/08/13:30)</option><option value="five">5 sessioni (00/06/08/13:30/18)</option><option value="us">US (13:30)</option></select></label>
      <label>Simboli<br>
        <span style="display:inline-flex;gap:10px;flex-wrap:wrap">
-       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="ETHUSDT"> ETH</label>
-       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="BTCUSDT"> BTC</label>
-       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="SOLUSDT"> SOL</label>
-       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="DOGEUSDT"> DOGE</label>
-       <label style="font-weight:400"><input type="checkbox" class="set_sym" value="BNBUSDT"> BNB</label>
-       <label style="font-weight:400" title="Oro tokenizzato: scorrelato da BTC"><input type="checkbox" class="set_sym" value="PAXGUSDT"> Oro (PAXG)</label>
+       __SYMS__
        </span></label>
-     <label style="display:flex;align-items:end;gap:6px"><input type="checkbox" id="set_reset"> Azzera a 100 USDT</label>
+     <label style="display:flex;align-items:end;gap:6px"><input type="checkbox" id="set_reset"> Azzera a __RESETCAP__</label>
    </div>
    <div style="margin-top:12px;padding:10px;border:1px dashed var(--border);border-radius:8px">
      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Configurazione una tantum (poi non serve più)</div>
@@ -642,16 +664,17 @@ def _render_crypto(payload: dict) -> str:
  <pre id="botLog" style="background:var(--card);border:1px solid var(--border);border-radius:10px;
    padding:12px;overflow:auto;max-height:220px;font-size:12px;white-space:pre-wrap;margin:0"></pre>
  <div class="sub" style="margin-top:14px">
-   Il pulsante ripristina il capitale <em>visualizzato</em> a 100 USDT da questo momento (baseline locale).
-   Per azzerare davvero lo storico sul server: esegui <code>paper-crypto --reset</code> in locale
-   oppure lancia il workflow GitHub con l'opzione <code>reset</code>.
+   Il pulsante ripristina il capitale <em>visualizzato</em> a __RESETCAP__ da questo momento (baseline locale).
+   Per azzerare davvero lo storico sul server: lancia il workflow GitHub con l'opzione <code>reset</code>.
    Il <strong>filtro daily</strong> (breakout+retest) si attiva/disattiva col workflow (input
-   <code>daily_filter</code>) o cambiando <code>daily_context.enabled</code> in <code>config.crypto.json</code>.
+   <code>daily_filter</code>) o cambiando <code>daily_context.enabled</code> in <code>__CFGFILE__</code>.
  </div>
 </main>
 <script id="payload" type="application/json">__PAYLOAD__</script>
 <script>
  const p=JSON.parse(document.getElementById('payload').textContent);
+ const WF=p.workflow||'paper-crypto.yml';
+ const CCY=p.currency||'USDT';
  const money=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2,minimumFractionDigits:2});
  const num=new Intl.NumberFormat('it-IT',{maximumFractionDigits:2});
  const q4=new Intl.NumberFormat('it-IT',{maximumFractionDigits:4});
@@ -726,13 +749,13 @@ def _render_crypto(payload: dict) -> str:
    if(repo&&tok){
      upd.textContent='Invio reset totale al bot…';
      try{
-       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/paper-crypto.yml/dispatches',{
+       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/'+WF+'/dispatches',{
          method:'POST',headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
          body:JSON.stringify({ref:'main',inputs:{reset:'true'}})});
-       upd.textContent=(r.status===204)?'✓ Reset totale inviato: storico azzerato a 100 USDT (~1-2 min, poi ricarica).':('Vista azzerata a 100. Errore server '+r.status);
-     }catch(e){upd.textContent='Vista azzerata a 100 USDT (server non raggiungibile).';}
+       upd.textContent=(r.status===204)?('✓ Reset totale inviato: storico azzerato a '+cap+' '+CCY+' (~1-2 min, poi ricarica).'):('Vista azzerata. Errore server '+r.status);
+     }catch(e){upd.textContent='Vista azzerata a '+cap+' '+CCY+' (server non raggiungibile).';}
    }else{
-     upd.textContent='✓ Capitale visualizzato riportato a 100 USDT. Per azzerare anche lo storico sul server, inserisci il token nelle ⚙ Impostazioni.';
+     upd.textContent='✓ Capitale visualizzato riportato a '+cap+' '+CCY+'. Per azzerare anche lo storico sul server, inserisci il token nelle ⚙ Impostazioni.';
    }
  });
  document.getElementById('filterToggle').addEventListener('click',()=>{
@@ -750,7 +773,7 @@ def _render_crypto(payload: dict) -> str:
    const repo0=p.repo||'';
    // Token-free path: link straight to the GitHub Actions "Run workflow" page.
    const ga=document.getElementById('ghActions');
-   if(ga&&repo0)ga.href='https://github.com/'+repo0+'/actions/workflows/paper-crypto.yml';
+   if(ga&&repo0)ga.href='https://github.com/'+repo0+'/actions/workflows/'+WF;
    const ts=document.getElementById('tokState');
    function tokUI(){const has=!!localStorage.getItem(tokKey);
      if(ts)ts.innerHTML=has?'<span style="color:var(--good)">✓ token salvato in questo browser</span>':'';}
@@ -781,7 +804,7 @@ def _render_crypto(payload: dict) -> str:
      };
      st('Invio impostazioni al bot…');
      try{
-       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/paper-crypto.yml/dispatches',{
+       const r=await fetch('https://api.github.com/repos/'+repo+'/actions/workflows/'+WF+'/dispatches',{
          method:'POST',
          headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
          body:JSON.stringify({ref:'main',inputs:inputs})
@@ -796,7 +819,7 @@ def _render_crypto(payload: dict) -> str:
  //      time-bounded segments, daily high/low reference lines ----
  (function(){
    let candles=(p.candles||[]);
-   let sym=p.chart_symbol||'ETHUSDT';
+   let sym=p.chart_symbol||(p.symbols&&p.symbols[0])||'ETHUSDT';
    const el=document.getElementById('chart');
    // Symbol picker (all selected symbols trade; this only changes what's DISPLAYED).
    const symSel=document.getElementById('chartSym');
@@ -830,7 +853,7 @@ def _render_crypto(payload: dict) -> str:
    let allBars=candles.slice();
    let lastTime=candles.length?candles[candles.length-1].time:0;
    if(seeded)series.setData(candles);
-   else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">Carico le candele da Bitget…</div>');
+   else el.insertAdjacentHTML('afterbegin','<div id="chartWait" style="position:absolute;top:8px;left:12px;font-size:12px;color:var(--muted)">'+(p.kind==='stocks'?'Candele disponibili durante le sessioni USA (dati dal bot).':'Carico le candele da Bitget…')+'</div>');
 
    // --- Positions: SL/TP/entry as segments spanning ONLY entry->exit (open: entry->now) ---
    let openLines=[];        // {series, et, price} to grow while the position is open
@@ -927,6 +950,7 @@ def _render_crypto(payload: dict) -> str:
      if(allBars.length>720)allBars=allBars.slice(allBars.length-720);
    }
    async function fetchBars(limit){
+     if(p.kind==='stocks')return null;   // stocks candles come from the bot, not crypto venues
      try{
        const r=await fetch(`https://api.bitget.com/api/v2/spot/market/candles?symbol=${sym}&granularity=1min&limit=${limit}`,{cache:'no-store'});
        if(r.ok){const j=await r.json();const d=(j&&j.data)||[];
@@ -969,7 +993,18 @@ def _render_crypto(payload: dict) -> str:
        'Prezzo live '+sym+' (Bitget): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2})+
        ' · '+tHM.format(Date.now());
    }
-   tick(); setInterval(tick,60000);
+   if(p.kind==='stocks'){
+     // No live crypto polling for stocks: draw the server-provided candles once.
+     if(seeded){const w=document.getElementById('chartWait');if(w)w.remove();
+       if(!posDrawn){drawPositions();posDrawn=true;}
+       growOpenLines();drawDailyHL();drawPriorLevels();
+       chart.timeScale().fitContent();if(typeof setZoom==='function')setZoom('120');
+       const last=allBars[allBars.length-1];
+       if(last)document.getElementById('updated').textContent=
+         'Ultima candela '+sym+' (Alpaca): '+last.close.toLocaleString('it-IT',{maximumFractionDigits:2});}
+   }else{
+     tick(); setInterval(tick,60000);
+   }
 
    // --- Zoom selectors + autozoom ---
    function setZoom(z){
@@ -1006,7 +1041,11 @@ def _render_crypto(payload: dict) -> str:
 </script>
 </body></html>
 """
-    return html.replace("__PAYLOAD__", data)
+    return (html.replace("__PAYLOAD__", data)
+                .replace("__BRAND__", _brand)
+                .replace("__RESETCAP__", _resetcap)
+                .replace("__SYMS__", _syms_html)
+                .replace("__CFGFILE__", _cfg))
 
 
 def _render_compare(payload: dict) -> str:
