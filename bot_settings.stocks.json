@@ -2,6 +2,9 @@
   "symbols": [
     "SPY",
     "QQQ",
+    "AAPL",
+    "NVDA",
+    "TSLA",
     "GLD"
   ]
 }

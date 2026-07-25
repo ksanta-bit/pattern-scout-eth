@@ -47,7 +47,7 @@ jobs:
           python -m pattern_scout.cli paper-crypto \
             --ci \
             ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && '--reset' || '' }} \
-            --symbols SPY,QQQ,GLD \
+            --symbols SPY,QQQ,AAPL,NVDA,TSLA,GLD \
             --exchange alpaca \
             --config config.stocks.json \
             --settings bot_settings.stocks.json \
