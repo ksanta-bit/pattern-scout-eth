@@ -1,7 +1,66 @@
 {
   "variants": {
     "off": {
-      "trades": {},
+      "trades": {
+        "SOLUSDT:2026-07-27@06:00:john_wick": {
+          "symbol": "SOLUSDT",
+          "session": "2026-07-27@06:00",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-27T06:35:00+00:00",
+          "entry_time": "2026-07-27T06:40:00+00:00",
+          "exit_time": "2026-07-27T07:30:00+00:00",
+          "entry_price": 76.75160500000001,
+          "exit_price": 76.568265,
+          "stop_price": 77.57746996443421,
+          "target_price": 76.53,
+          "quantity": 6.054258523275028,
+          "pnl": 0.7384705082118375,
+          "r_multiple": 0.1476941016423675,
+          "exit_reason": "target",
+          "atr_fraction": 0.19372696441665455,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 15.489135291542944,
+          "liquidation_price": 78.92623380833335,
+          "notional": 464.6740587462883,
+          "fees": 0.3715172494454992,
+          "gross_pnl": 1.1099877576573367,
+          "atr": 2.3744758577368588,
+          "initial_stop": 77.57746996443421,
+          "trail_extreme": 76.48,
+          "breakeven_done": false
+        },
+        "BTCUSDT:2026-07-27@06:00:john_wick": {
+          "symbol": "BTCUSDT",
+          "session": "2026-07-27@06:00",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-27T06:10:00+00:00",
+          "entry_time": "2026-07-27T06:20:00+00:00",
+          "exit_time": "2026-07-27T06:48:00+00:00",
+          "entry_price": 65525.221000000005,
+          "exit_price": 65492.14971,
+          "stop_price": 66089.4600871947,
+          "target_price": 65459.42,
+          "quantity": 0.008861491721282817,
+          "pnl": -0.1714013880016657,
+          "r_multiple": -0.03428027760033314,
+          "exit_reason": "target",
+          "atr_fraction": 0.1857664806913016,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 19.355040114224234,
+          "liquidation_price": 67381.76892833333,
+          "notional": 580.6512034267271,
+          "fees": 0.4644623505488722,
+          "gross_pnl": 0.2930609625472065,
+          "atr": 1535.1531607788106,
+          "initial_stop": 66089.4600871947,
+          "trail_extreme": 65443.04,
+          "breakeven_done": false
+        }
+      },
       "open": {}
     },
     "on": {
@@ -10,5 +69,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-27T05:10:20"
+  "updated": "2026-07-27T08:49:36"
 }
