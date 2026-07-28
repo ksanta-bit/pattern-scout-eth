@@ -146,6 +146,35 @@
           "initial_stop": 66114.36302845058,
           "trail_extreme": 64900.0,
           "breakeven_done": true
+        },
+        "SOLUSDT:2026-07-28@00:00:john_wick": {
+          "symbol": "SOLUSDT",
+          "session": "2026-07-28@00:00",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-28T00:25:00+00:00",
+          "entry_time": "2026-07-28T00:30:00+00:00",
+          "exit_time": "2026-07-28T01:07:00+00:00",
+          "entry_price": 74.02699499999999,
+          "exit_price": 72.97089089456804,
+          "stop_price": 73.00739459186397,
+          "target_price": 74.29,
+          "quantity": 5.507704281857278,
+          "pnl": -6.302481634913844,
+          "r_multiple": -1.1223051970532685,
+          "exit_reason": "stop",
+          "atr_fraction": 0.1230719187273648,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 13.590626577817575,
+          "liquidation_price": 71.92956347499998,
+          "notional": 407.71879733452727,
+          "fees": 0.48577253133928794,
+          "gross_pnl": -5.816709103574556,
+          "atr": 2.8438656325440608,
+          "initial_stop": 73.00739459186397,
+          "trail_extreme": 74.09,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -156,5 +185,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-27T23:47:53"
+  "updated": "2026-07-28T01:10:35"
 }
