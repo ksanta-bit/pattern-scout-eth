@@ -146,6 +146,35 @@
           "initial_stop": 376.6809253305736,
           "trail_extreme": 373.62,
           "breakeven_done": false
+        },
+        "SPY:2026-07-28:john_wick": {
+          "symbol": "SPY",
+          "session": "2026-07-28",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-28T09:45:00-04:00",
+          "entry_time": "2026-07-28T09:50:00-04:00",
+          "exit_time": "2026-07-28T10:50:00-04:00",
+          "entry_price": 737.737518,
+          "exit_price": 739.272116,
+          "stop_price": 733.8677963492474,
+          "target_price": 739.42,
+          "quantity": 0.5168330387822704,
+          "pnl": 0.7931309476491739,
+          "r_multiple": 0.39656547382458696,
+          "exit_reason": "target",
+          "atr_fraction": 0.4015897541674607,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 95.32178081290748,
+          "liquidation_price": 553.3031385,
+          "notional": 381.2871232516299,
+          "fees": 0.0,
+          "gross_pnl": 0.7931309476491739,
+          "atr": 7.096794603010402,
+          "initial_stop": 733.8677963492474,
+          "trail_extreme": 739.61,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -156,5 +185,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-27T22:36:06"
+  "updated": "2026-07-28T15:16:00"
 }
