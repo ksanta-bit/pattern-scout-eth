@@ -320,6 +320,35 @@
           "initial_stop": 65035.64466278472,
           "trail_extreme": 64121.0,
           "breakeven_done": false
+        },
+        "BTCUSDT:2026-07-30@13:30:power_tower": {
+          "symbol": "BTCUSDT",
+          "session": "2026-07-30@13:30",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-07-30T13:50:00+00:00",
+          "entry_time": "2026-07-30T13:50:00+00:00",
+          "exit_time": "2026-07-30T14:18:00+00:00",
+          "entry_price": 65052.5724425,
+          "exit_price": 64721.36450999999,
+          "stop_price": 65545.64728241165,
+          "target_price": 64689.02,
+          "quantity": 0.01165486832962107,
+          "pnl": 3.2544135469258473,
+          "r_multiple": 0.5663077762851221,
+          "exit_reason": "target",
+          "atr_fraction": 0.2590255746141849,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 25.27263887734912,
+          "liquidation_price": 66895.72866170417,
+          "notional": 758.1791663204737,
+          "fees": 0.6057712960877761,
+          "gross_pnl": 3.8601848430136236,
+          "atr": 1293.6946496465948,
+          "initial_stop": 65545.64728241165,
+          "trail_extreme": 64636.0,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -330,5 +359,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-30T13:13:47"
+  "updated": "2026-07-30T15:27:07"
 }
