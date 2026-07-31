@@ -291,6 +291,35 @@
           "initial_stop": 312.0038996226838,
           "trail_extreme": 303.53,
           "breakeven_done": false
+        },
+        "GLD:2026-07-31:john_wick": {
+          "symbol": "GLD",
+          "session": "2026-07-31",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-07-31T10:05:00-04:00",
+          "entry_time": "2026-07-31T10:10:00-04:00",
+          "exit_time": "2026-07-31T10:49:00-04:00",
+          "entry_price": 369.658917,
+          "exit_price": 370.83081899999996,
+          "stop_price": 366.98325215549556,
+          "target_price": 370.905,
+          "quantity": 0.747477773274867,
+          "pnl": 0.8759706974563547,
+          "r_multiple": 0.43798534872817735,
+          "exit_reason": "target",
+          "atr_fraction": 0.28553013786689346,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 69.07795603758971,
+          "liquidation_price": 277.24418775,
+          "notional": 276.31182415035886,
+          "fees": 0.0,
+          "gross_pnl": 0.8759706974563547,
+          "atr": 6.689311378017683,
+          "initial_stop": 366.98325215549556,
+          "trail_extreme": 371.12,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -331,5 +360,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-30T22:53:42"
+  "updated": "2026-07-31T15:14:53"
 }
