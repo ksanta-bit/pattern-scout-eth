@@ -378,9 +378,7 @@
           "initial_stop": 1848.8626322888638,
           "trail_extreme": 1870.0345499999999,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "BTCUSDT:2026-07-31@13:30:power_tower": {
           "symbol": "BTCUSDT",
           "session": "2026-07-31@13:30",
@@ -388,32 +386,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-07-31T14:10:00+00:00",
           "entry_time": "2026-07-31T14:10:00+00:00",
-          "exit_time": null,
+          "exit_time": "2026-07-31T23:55:00+00:00",
           "entry_price": 62820.159382499995,
-          "exit_price": null,
+          "exit_price": 62872.0,
           "stop_price": 62088.36824970391,
           "target_price": 63825.52,
           "quantity": 0.00807531377236877,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -0.19037292297826797,
+          "r_multiple": -0.03221503660398099,
+          "exit_reason": "session_close",
           "atr_fraction": 0.26949986282109967,
-          "status": "open",
+          "status": "closed",
           "leverage": 30.0,
           "margin": 16.90974994146345,
           "liquidation_price": 61040.25486666249,
           "notional": 507.2924982439034,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.6090021754441636,
+          "gross_pnl": 0.4186292524658956,
           "atr": 1335.6222011843483,
           "initial_stop": 62088.36824970391,
           "trail_extreme": 63302.0,
-          "breakeven_done": false,
-          "current_price": 62981.95,
-          "unrealized_pnl": 1.3065100017378184,
-          "unrealized_r": 0.22108851863484702
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {},
@@ -421,5 +417,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-07-31T23:36:18"
+  "updated": "2026-08-01T01:12:06"
 }
