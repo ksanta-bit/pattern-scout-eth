@@ -407,6 +407,35 @@
           "initial_stop": 62088.36824970391,
           "trail_extreme": 63302.0,
           "breakeven_done": false
+        },
+        "BTCUSDT:2026-08-02@00:00:john_wick": {
+          "symbol": "BTCUSDT",
+          "session": "2026-08-02@00:00",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-02T00:10:00+00:00",
+          "entry_time": "2026-08-02T00:20:00+00:00",
+          "exit_time": "2026-08-02T00:52:00+00:00",
+          "entry_price": 62886.27113500001,
+          "exit_price": 62855.05181999999,
+          "stop_price": 63342.12747719369,
+          "target_price": 62823.64,
+          "quantity": 0.012197742991615053,
+          "pnl": -0.23277511662397565,
+          "r_multiple": -0.04186287713613831,
+          "exit_reason": "target",
+          "atr_fraction": 0.12289676968208903,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 25.569019100191678,
+          "liquidation_price": 64668.04881715834,
+          "notional": 767.0705730057504,
+          "fees": 0.6135802973684514,
+          "gross_pnl": 0.3808051807444758,
+          "atr": 1272.205936774797,
+          "initial_stop": 63342.12747719369,
+          "trail_extreme": 62818.78,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -417,5 +446,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-02T22:42:13"
+  "updated": "2026-08-02T23:45:25"
 }
