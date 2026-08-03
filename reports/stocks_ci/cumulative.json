@@ -378,9 +378,7 @@
           "initial_stop": 322.31821149699914,
           "trail_extreme": 316.97,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "AAPL:2026-08-03:power_tower": {
           "symbol": "AAPL",
           "session": "2026-08-03",
@@ -388,32 +386,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-03T09:40:00-04:00",
           "entry_time": "2026-08-03T09:40:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-03T15:45:00+00:00",
           "entry_price": 307.466481,
-          "exit_price": null,
+          "exit_price": 303.04133324456853,
           "stop_price": 303.10195363529556,
           "target_price": 311.77,
           "quantity": 0.45823976638887276,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -2.027778673685154,
+          "r_multiple": -1.013889336842577,
+          "exit_reason": "stop",
           "atr_fraction": 0.8115521687387237,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 35.2233421064622,
           "liquidation_price": 230.59986075,
           "notional": 140.8933684258488,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -2.027778673685154,
           "atr": 8.021665458817672,
           "initial_stop": 303.10195363529556,
           "trail_extreme": 308.435,
-          "breakeven_done": false,
-          "current_price": 303.815,
-          "unrealized_pnl": -1.6732538004134028,
-          "unrealized_r": -0.8366269002067014
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -451,5 +447,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-03T15:40:28"
+  "updated": "2026-08-03T17:28:41"
 }
