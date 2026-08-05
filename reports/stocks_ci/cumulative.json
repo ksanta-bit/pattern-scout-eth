@@ -465,9 +465,71 @@
           "initial_stop": 719.7673385299992,
           "trail_extreme": 715.135,
           "breakeven_done": false
+        },
+        "QQQ:2026-08-05:john_wick": {
+          "symbol": "QQQ",
+          "session": "2026-08-05",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-05T10:05:00-04:00",
+          "entry_time": "2026-08-05T10:20:00-04:00",
+          "exit_time": "2026-08-05T10:23:00-04:00",
+          "entry_price": 725.709829,
+          "exit_price": 724.884948,
+          "stop_price": 731.317987094708,
+          "target_price": 724.74,
+          "quantity": 0.3566233273429408,
+          "pnl": 0.2941718068819741,
+          "r_multiple": 0.14708590344098704,
+          "exit_reason": "target",
+          "atr_fraction": 0.24218309559466353,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 64.70126347586414,
+          "liquidation_price": 907.13728625,
+          "notional": 258.80505390345655,
+          "fees": 0.0,
+          "gross_pnl": 0.2941718068819741,
+          "atr": 13.977028378831982,
+          "initial_stop": 731.317987094708,
+          "trail_extreme": 724.55,
+          "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "NVDA:2026-08-05:power_tower": {
+          "symbol": "NVDA",
+          "session": "2026-08-05",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-05T10:00:00-04:00",
+          "entry_time": "2026-08-05T10:00:00-04:00",
+          "exit_time": null,
+          "entry_price": 220.365918,
+          "exit_price": null,
+          "stop_price": 223.31682106698784,
+          "target_price": 216.42,
+          "quantity": 0.6777586232412275,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.9314481547954093,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 37.33872529824231,
+          "liquidation_price": 275.4573975,
+          "notional": 149.35490119296924,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 5.743744267951381,
+          "initial_stop": 223.31682106698784,
+          "trail_extreme": 218.35,
+          "breakeven_done": false,
+          "current_price": 219.365,
+          "unrealized_pnl": 0.6783808056573524,
+          "unrealized_r": 0.33919040282867624
+        }
+      }
     },
     "on": {
       "trades": {
@@ -505,5 +567,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-04T22:42:27"
+  "updated": "2026-08-05T15:10:56"
 }
