@@ -494,9 +494,7 @@
           "initial_stop": 731.317987094708,
           "trail_extreme": 724.55,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "NVDA:2026-08-05:power_tower": {
           "symbol": "NVDA",
           "session": "2026-08-05",
@@ -504,32 +502,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-05T10:00:00-04:00",
           "entry_time": "2026-08-05T10:00:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-05T16:00:00+00:00",
           "entry_price": 220.365918,
-          "exit_price": null,
+          "exit_price": 219.335,
           "stop_price": 223.31682106698784,
           "target_price": 216.42,
           "quantity": 0.6777586232412275,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.69871356435459,
+          "r_multiple": 0.34935678217729504,
+          "exit_reason": "session_close",
           "atr_fraction": 0.9314481547954093,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 37.33872529824231,
           "liquidation_price": 275.4573975,
           "notional": 149.35490119296924,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.69871356435459,
           "atr": 5.743744267951381,
           "initial_stop": 223.31682106698784,
           "trail_extreme": 218.35,
-          "breakeven_done": false,
-          "current_price": 219.365,
-          "unrealized_pnl": 0.6783808056573524,
-          "unrealized_r": 0.33919040282867624
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -567,5 +563,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-05T15:10:56"
+  "updated": "2026-08-05T16:52:25"
 }
