@@ -525,7 +525,40 @@
           "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "ETHUSDT:2026-08-05@18:00:john_wick": {
+          "symbol": "ETHUSDT",
+          "session": "2026-08-05@18:00",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-05T18:15:00+00:00",
+          "entry_time": "2026-08-05T18:25:00+00:00",
+          "exit_time": null,
+          "entry_price": 1917.550745,
+          "exit_price": null,
+          "stop_price": 1938.2225107647898,
+          "target_price": 1913.9,
+          "quantity": 0.2615386697979256,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.1427945652378909,
+          "status": "open",
+          "leverage": 30.0,
+          "margin": 16.717122370577375,
+          "liquidation_price": 1971.8813494416665,
+          "notional": 501.5136711173213,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 50.422087059159864,
+          "initial_stop": 1938.2225107647898,
+          "trail_extreme": 1915.14,
+          "breakeven_done": false,
+          "current_price": 1917.7,
+          "unrealized_pnl": -0.039035954160699646,
+          "unrealized_r": -0.007220234676529906
+        }
+      }
     },
     "on": {
       "trades": {},
@@ -533,5 +566,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-05T17:09:54"
+  "updated": "2026-08-05T18:53:43"
 }
