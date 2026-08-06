@@ -552,9 +552,71 @@
           "initial_stop": 1938.2225107647898,
           "trail_extreme": 1910.72,
           "breakeven_done": false
+        },
+        "ETHUSDT:2026-08-06@13:30:john_wick": {
+          "symbol": "ETHUSDT",
+          "session": "2026-08-06@13:30",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-06T13:55:00+00:00",
+          "entry_time": "2026-08-06T14:00:00+00:00",
+          "exit_time": "2026-08-06T14:18:00+00:00",
+          "entry_price": 1906.4762850000002,
+          "exit_price": 1894.2866699999997,
+          "stop_price": 1926.56108997058,
+          "target_price": 1893.34,
+          "quantity": 0.269937358364214,
+          "pnl": 2.879387221345901,
+          "r_multiple": 0.5310916342292221,
+          "exit_reason": "target",
+          "atr_fraction": 0.26074671536521243,
+          "status": "closed",
+          "leverage": 30.0,
+          "margin": 17.154305738564016,
+          "liquidation_price": 1960.493113075,
+          "notional": 514.6291721569205,
+          "fees": 0.411045251231021,
+          "gross_pnl": 3.290432472576922,
+          "atr": 56.45325188232035,
+          "initial_stop": 1926.56108997058,
+          "trail_extreme": 1892.04,
+          "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "BTCUSDT:2026-08-06@13:30:john_wick": {
+          "symbol": "BTCUSDT",
+          "session": "2026-08-06@13:30",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-06T14:05:00+00:00",
+          "entry_time": "2026-08-06T14:15:00+00:00",
+          "exit_time": null,
+          "entry_price": 64425.01138,
+          "exit_price": null,
+          "stop_price": 64941.00461481665,
+          "target_price": 64172.0,
+          "quantity": 0.010507190465288327,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.17305916047063086,
+          "status": "open",
+          "leverage": 30.0,
+          "margin": 22.564195509934265,
+          "liquidation_price": 66250.38670243333,
+          "notional": 676.9258652980279,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 1497.1180912666312,
+          "initial_stop": 64941.00461481665,
+          "trail_extreme": 64362.0,
+          "breakeven_done": false,
+          "current_price": 64580.46,
+          "unrealized_pnl": -1.6333282579061816,
+          "unrealized_r": -0.3012609652822919
+        }
+      }
     },
     "on": {
       "trades": {},
@@ -562,5 +624,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-06T12:20:08"
+  "updated": "2026-08-06T14:43:36"
 }
