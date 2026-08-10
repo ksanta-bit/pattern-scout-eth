@@ -697,9 +697,7 @@
           "initial_stop": 332.7793716350734,
           "trail_extreme": 322.86,
           "breakeven_done": true
-        }
-      },
-      "open": {
+        },
         "TSLA:2026-08-10:power_tower": {
           "symbol": "TSLA",
           "session": "2026-08-10",
@@ -707,32 +705,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-10T10:05:00-04:00",
           "entry_time": "2026-08-10T10:05:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-10T16:00:00+00:00",
           "entry_price": 329.9364995,
-          "exit_price": null,
+          "exit_price": 331.41,
           "stop_price": 333.5195185901123,
           "target_price": 326.3,
           "quantity": 0.5581884856598234,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -0.8224910127139926,
+          "r_multiple": -0.4112455063569963,
+          "exit_reason": "session_close",
           "atr_fraction": 0.2756130980540409,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 46.04168875495202,
           "liquidation_price": 412.42062437500005,
           "notional": 184.16675501980808,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -0.8224910127139926,
           "atr": 11.15694436044929,
           "initial_stop": 333.5195185901123,
-          "trail_extreme": 328.74,
-          "breakeven_done": false,
-          "current_price": 329.73,
-          "unrealized_pnl": 0.11526564319451445,
-          "unrealized_r": 0.057632821597257224
+          "trail_extreme": 328.27,
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -770,5 +766,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-10T15:26:32"
+  "updated": "2026-08-10T16:22:33"
 }
