@@ -726,6 +726,35 @@
           "initial_stop": 333.5195185901123,
           "trail_extreme": 328.27,
           "breakeven_done": false
+        },
+        "GLD:2026-08-10:power_tower": {
+          "symbol": "GLD",
+          "session": "2026-08-10",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-10T10:00:00-04:00",
+          "entry_time": "2026-08-10T10:00:00-04:00",
+          "exit_time": "2026-08-10T10:23:00-04:00",
+          "entry_price": 396.39926399999996,
+          "exit_price": 397.97039,
+          "stop_price": 394.50926872032244,
+          "target_price": 398.05,
+          "quantity": 1.0090836091966104,
+          "pnl": 1.5853974945826836,
+          "r_multiple": 0.8312856740404778,
+          "exit_reason": "target",
+          "atr_fraction": 0.1581814769936766,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 99.99999999999999,
+          "liquidation_price": 297.299448,
+          "notional": 399.99999999999994,
+          "fees": 0.0,
+          "gross_pnl": 1.5853974945826836,
+          "atr": 4.931045118710141,
+          "initial_stop": 394.50926872032244,
+          "trail_extreme": 398.06,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -766,5 +795,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-10T18:05:46"
+  "updated": "2026-08-10T19:11:40"
 }
