@@ -784,11 +784,11 @@
           "gross_pnl": null,
           "atr": 10.391694345160621,
           "initial_stop": 715.50284641371,
-          "trail_extreme": 722.095,
+          "trail_extreme": 722.44,
           "breakeven_done": false,
-          "current_price": 721.64,
-          "unrealized_pnl": 0.9947961811225926,
-          "unrealized_r": 0.4973980905612963
+          "current_price": 720.16,
+          "unrealized_pnl": 0.2725886812218277,
+          "unrealized_r": 0.13629434061091386
         },
         "NVDA:2026-08-11:power_tower": {
           "symbol": "NVDA",
@@ -816,11 +816,11 @@
           "gross_pnl": null,
           "atr": 7.812962712666084,
           "initial_stop": 216.82731432183348,
-          "trail_extreme": 220.12,
+          "trail_extreme": 220.56,
           "breakeven_done": false,
-          "current_price": 219.73,
-          "unrealized_pnl": -0.03815203813095868,
-          "unrealized_r": -0.01907601906547934
+          "current_price": 218.63,
+          "unrealized_pnl": -0.7816127491160575,
+          "unrealized_r": -0.39080637455802875
         }
       }
     },
@@ -860,5 +860,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-11T14:16:39"
+  "updated": "2026-08-11T15:18:18"
 }
