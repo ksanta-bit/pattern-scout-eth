@@ -813,6 +813,35 @@
           "initial_stop": 216.82731432183348,
           "trail_extreme": 220.56,
           "breakeven_done": false
+        },
+        "TSLA:2026-08-12:power_tower": {
+          "symbol": "TSLA",
+          "session": "2026-08-12",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-12T09:45:00-04:00",
+          "entry_time": "2026-08-12T09:45:00-04:00",
+          "exit_time": "2026-08-12T14:27:00+00:00",
+          "entry_price": 329.940975,
+          "exit_price": 326.14119700881287,
+          "stop_price": 326.20643829647213,
+          "target_price": 335.26,
+          "quantity": 0.5355416638724393,
+          "pnl": -2.0349394277462216,
+          "r_multiple": -1.0174697138731108,
+          "exit_reason": "stop",
+          "atr_fraction": 0.6009879380479113,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 44.17428468279872,
+          "liquidation_price": 247.45573124999999,
+          "notional": 176.69713873119488,
+          "fees": 0.0,
+          "gross_pnl": -2.0349394277462216,
+          "atr": 10.316346814111466,
+          "initial_stop": 326.20643829647213,
+          "trail_extreme": 330.13,
+          "breakeven_done": false
         }
       },
       "open": {
@@ -842,11 +871,11 @@
           "gross_pnl": null,
           "atr": 7.049839120667701,
           "initial_stop": 769.7565877198331,
-          "trail_extreme": 772.71,
+          "trail_extreme": 773.305,
           "breakeven_done": false,
-          "current_price": 772.58,
-          "unrealized_pnl": 0.03134005141128284,
-          "unrealized_r": 0.02190717089651915
+          "current_price": 772.22,
+          "unrealized_pnl": -0.1550630167739064,
+          "unrealized_r": -0.10839139871266518
         },
         "QQQ:2026-08-12:john_wick": {
           "symbol": "QQQ",
@@ -876,41 +905,9 @@
           "initial_stop": 720.6164078616816,
           "trail_extreme": 726.5,
           "breakeven_done": false,
-          "current_price": 724.93,
-          "unrealized_pnl": -0.03416698384120303,
-          "unrealized_r": -0.017083491920601514
-        },
-        "TSLA:2026-08-12:power_tower": {
-          "symbol": "TSLA",
-          "session": "2026-08-12",
-          "side": "long",
-          "signal_type": "power_tower",
-          "signal_time": "2026-08-12T09:45:00-04:00",
-          "entry_time": "2026-08-12T09:45:00-04:00",
-          "exit_time": null,
-          "entry_price": 329.940975,
-          "exit_price": null,
-          "stop_price": 326.20643829647213,
-          "target_price": 335.26,
-          "quantity": 0.5355416638724393,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
-          "atr_fraction": 0.6009879380479113,
-          "status": "open",
-          "leverage": 4.0,
-          "margin": 44.17428468279872,
-          "liquidation_price": 247.45573124999999,
-          "notional": 176.69713873119488,
-          "fees": null,
-          "gross_pnl": null,
-          "atr": 10.316346814111466,
-          "initial_stop": 326.20643829647213,
-          "trail_extreme": 330.13,
-          "breakeven_done": false,
-          "current_price": 327.59,
-          "unrealized_pnl": -1.2590450632225108,
-          "unrealized_r": -0.6295225316112554
+          "current_price": 724.445,
+          "unrealized_pnl": -0.25519599684578476,
+          "unrealized_r": -0.12759799842289238
         }
       }
     },
@@ -950,5 +947,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-12T14:18:13"
+  "updated": "2026-08-12T15:18:01"
 }
