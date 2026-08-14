@@ -900,6 +900,35 @@
           "initial_stop": 720.6164078616816,
           "trail_extreme": 726.5,
           "breakeven_done": false
+        },
+        "TSLA:2026-08-14:power_tower": {
+          "symbol": "TSLA",
+          "session": "2026-08-14",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-14T09:40:00-04:00",
+          "entry_time": "2026-08-14T09:40:00-04:00",
+          "exit_time": "2026-08-14T10:05:00-04:00",
+          "entry_price": 346.005785,
+          "exit_price": 350.8718405074394,
+          "stop_price": 350.8016801714051,
+          "target_price": 342.17,
+          "quantity": 0.41702329357087214,
+          "pnl": -2.029258494411059,
+          "r_multiple": -1.0146292472055296,
+          "exit_reason": "stop",
+          "atr_fraction": 0.4911853616441719,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 36.07311801381877,
+          "liquidation_price": 432.50723125,
+          "notional": 144.29247205527508,
+          "fees": 0.0,
+          "gross_pnl": -2.029258494411059,
+          "atr": 11.411170685620668,
+          "initial_stop": 350.8016801714051,
+          "trail_extreme": 345.12,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -940,5 +969,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-13T22:27:34"
+  "updated": "2026-08-14T14:13:06"
 }
