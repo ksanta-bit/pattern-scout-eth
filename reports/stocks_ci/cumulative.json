@@ -929,9 +929,71 @@
           "initial_stop": 350.8016801714051,
           "trail_extreme": 345.12,
           "breakeven_done": false
+        },
+        "GLD:2026-08-14:john_wick": {
+          "symbol": "GLD",
+          "session": "2026-08-14",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-14T10:25:00-04:00",
+          "entry_time": "2026-08-14T10:30:00-04:00",
+          "exit_time": "2026-08-14T10:42:00-04:00",
+          "entry_price": 402.744435,
+          "exit_price": 402.22542899999996,
+          "stop_price": 404.6096920284185,
+          "target_price": 402.145,
+          "quantity": 0.9931856662401803,
+          "pnl": 0.5154693198926978,
+          "r_multiple": 0.2782490520569676,
+          "exit_reason": "target",
+          "atr_fraction": 0.2128752773411545,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 100.0,
+          "liquidation_price": 503.43054375,
+          "notional": 400.0,
+          "fees": 0.0,
+          "gross_pnl": 0.5154693198926978,
+          "atr": 5.472688113674132,
+          "initial_stop": 404.6096920284185,
+          "trail_extreme": 401.945,
+          "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "NVDA:2026-08-14:john_wick": {
+          "symbol": "NVDA",
+          "session": "2026-08-14",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-14T10:20:00-04:00",
+          "entry_time": "2026-08-14T10:30:00-04:00",
+          "exit_time": null,
+          "entry_price": 225.155022,
+          "exit_price": null,
+          "stop_price": 222.06328285546988,
+          "target_price": 227.47,
+          "quantity": 0.6468851046306354,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.2635012507882985,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 36.412357491145755,
+          "liquidation_price": 168.8662665,
+          "notional": 145.64942996458302,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 9.29786857812057,
+          "initial_stop": 222.06328285546988,
+          "trail_extreme": 226.93,
+          "breakeven_done": false,
+          "current_price": 226.06,
+          "unrealized_pnl": 0.585416788218423,
+          "unrealized_r": 0.2927083941092115
+        }
+      }
     },
     "on": {
       "trades": {
@@ -965,9 +1027,42 @@
           "breakeven_done": true
         }
       },
-      "open": {}
+      "open": {
+        "NVDA:2026-08-14:john_wick": {
+          "symbol": "NVDA",
+          "session": "2026-08-14",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-14T10:20:00-04:00",
+          "entry_time": "2026-08-14T10:30:00-04:00",
+          "exit_time": null,
+          "entry_price": 225.155022,
+          "exit_price": null,
+          "stop_price": 222.06328285546988,
+          "target_price": 227.47,
+          "quantity": 0.6468851046306354,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.2635012507882985,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 36.412357491145755,
+          "liquidation_price": 168.8662665,
+          "notional": 145.64942996458302,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 9.29786857812057,
+          "initial_stop": 222.06328285546988,
+          "trail_extreme": 226.93,
+          "breakeven_done": false,
+          "current_price": 226.06,
+          "unrealized_pnl": 0.585416788218423,
+          "unrealized_r": 0.2927083941092115
+        }
+      }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-14T14:13:06"
+  "updated": "2026-08-14T15:07:18"
 }
