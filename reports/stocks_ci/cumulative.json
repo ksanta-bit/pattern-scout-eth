@@ -1018,9 +1018,9 @@
           "initial_stop": 773.0369253182663,
           "trail_extreme": 775.73,
           "breakeven_done": false,
-          "current_price": 775.14,
-          "unrealized_pnl": -0.2810965407397774,
-          "unrealized_r": -0.20584169492659785
+          "current_price": 775.06,
+          "unrealized_pnl": -0.32235039459425163,
+          "unrealized_r": -0.23605111400130752
         }
       }
     },
@@ -1114,13 +1114,13 @@
           "initial_stop": 773.0369253182663,
           "trail_extreme": 775.73,
           "breakeven_done": false,
-          "current_price": 775.14,
-          "unrealized_pnl": -0.2810965407397774,
-          "unrealized_r": -0.20584169492659785
+          "current_price": 775.06,
+          "unrealized_pnl": -0.32235039459425163,
+          "unrealized_r": -0.23605111400130752
         }
       }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-17T14:38:21"
+  "updated": "2026-08-17T14:58:39"
 }
