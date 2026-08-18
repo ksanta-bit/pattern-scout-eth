@@ -1016,6 +1016,35 @@
           "initial_stop": 773.0369253182663,
           "trail_extreme": 775.86,
           "breakeven_done": false
+        },
+        "AAPL:2026-08-18:john_wick": {
+          "symbol": "AAPL",
+          "session": "2026-08-18",
+          "side": "long",
+          "signal_type": "john_wick",
+          "signal_time": "2026-08-18T09:50:00-04:00",
+          "entry_time": "2026-08-18T09:55:00-04:00",
+          "exit_time": "2026-08-18T10:01:00-04:00",
+          "entry_price": 306.541296,
+          "exit_price": 307.86841400000003,
+          "stop_price": 303.76247954725085,
+          "target_price": 307.93,
+          "quantity": 0.719730876079044,
+          "pnl": 0.9551678008002984,
+          "r_multiple": 0.4775839004001492,
+          "exit_reason": "target",
+          "atr_fraction": 0.26580433489014565,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 55.15680888112138,
+          "liquidation_price": 229.905972,
+          "notional": 220.6272355244855,
+          "fees": 0.0,
+          "gross_pnl": 0.9551678008002984,
+          "atr": 7.298601810996727,
+          "initial_stop": 303.76247954725085,
+          "trail_extreme": 308.84,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -1114,5 +1143,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-18T13:37:22"
+  "updated": "2026-08-18T14:16:20"
 }
