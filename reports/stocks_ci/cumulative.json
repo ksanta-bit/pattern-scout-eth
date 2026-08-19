@@ -1074,9 +1074,7 @@
           "initial_stop": 314.0438597600723,
           "trail_extreme": 311.4,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "QQQ:2026-08-19:power_tower": {
           "symbol": "QQQ",
           "session": "2026-08-19",
@@ -1084,31 +1082,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-19T10:15:00-04:00",
           "entry_time": "2026-08-19T10:15:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-19T14:16:00+00:00",
           "entry_price": 713.7627239999999,
-          "exit_price": null,
+          "exit_price": 713.6199714551999,
           "stop_price": 713.7627239999999,
           "target_price": 721.39,
           "quantity": 0.5374823085274004,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -0.07672696732728257,
+          "r_multiple": 0.0,
+          "exit_reason": "stop",
           "atr_fraction": 0.46537351759664014,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 95.90870915908143,
           "liquidation_price": 535.3220429999999,
           "notional": 383.6348366363257,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -0.07672696732728257,
           "atr": 9.067984834619851,
           "initial_stop": 710.041671291345,
           "trail_extreme": 717.86,
-          "breakeven_done": true,
-          "current_price": 717.85,
-          "unrealized_pnl": 2.1968385400686863,
-          "unrealized_r": 0.0
-        },
+          "breakeven_done": true
+        }
+      },
+      "open": {
         "NVDA:2026-08-19:john_wick": {
           "symbol": "NVDA",
           "session": "2026-08-19",
@@ -1135,11 +1132,11 @@
           "gross_pnl": null,
           "atr": 5.470933803950327,
           "initial_stop": 216.58323654901244,
-          "trail_extreme": 219.7,
+          "trail_extreme": 219.94,
           "breakeven_done": false,
-          "current_price": 219.63,
-          "unrealized_pnl": 0.7257779506508721,
-          "unrealized_r": 0.36288897532543607
+          "current_price": 219.37,
+          "unrealized_pnl": 0.49316971618505284,
+          "unrealized_r": 0.24658485809252642
         }
       }
     },
@@ -1237,5 +1234,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-19T14:55:31"
+  "updated": "2026-08-19T15:24:14"
 }
