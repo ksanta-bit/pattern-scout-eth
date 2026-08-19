@@ -1134,9 +1134,9 @@
           "initial_stop": 216.58323654901244,
           "trail_extreme": 219.94,
           "breakeven_done": false,
-          "current_price": 219.37,
-          "unrealized_pnl": 0.49316971618505284,
-          "unrealized_r": 0.24658485809252642
+          "current_price": 218.84,
+          "unrealized_pnl": 0.01900677669701902,
+          "unrealized_r": 0.00950338834850951
         }
       }
     },
@@ -1234,5 +1234,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-19T15:24:14"
+  "updated": "2026-08-19T15:54:15"
 }
