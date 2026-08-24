@@ -1308,7 +1308,40 @@
           "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "TSLA:2026-08-24:power_tower": {
+          "symbol": "TSLA",
+          "session": "2026-08-24",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-24T09:40:00-04:00",
+          "entry_time": "2026-08-24T09:40:00-04:00",
+          "exit_time": null,
+          "entry_price": 354.26083800000004,
+          "exit_price": null,
+          "stop_price": 349.5861902362168,
+          "target_price": 363.12,
+          "quantity": 0.42783972206311843,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.9654038692745388,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 37.89171461694186,
+          "liquidation_price": 265.6956285,
+          "notional": 151.56685846776745,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 10.990219055132844,
+          "initial_stop": 349.5861902362168,
+          "trail_extreme": 354.305,
+          "breakeven_done": false,
+          "current_price": 352.51,
+          "unrealized_pnl": -0.7490780432975651,
+          "unrealized_r": -0.37453902164878256
+        }
+      }
     },
     "on": {
       "trades": {
@@ -1429,9 +1462,42 @@
           "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "TSLA:2026-08-24:power_tower": {
+          "symbol": "TSLA",
+          "session": "2026-08-24",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-24T09:40:00-04:00",
+          "entry_time": "2026-08-24T09:40:00-04:00",
+          "exit_time": null,
+          "entry_price": 354.26083800000004,
+          "exit_price": null,
+          "stop_price": 349.5861902362168,
+          "target_price": 363.12,
+          "quantity": 0.42783972206311843,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.9654038692745388,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 37.89171461694186,
+          "liquidation_price": 265.6956285,
+          "notional": 151.56685846776745,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 10.990219055132844,
+          "initial_stop": 349.5861902362168,
+          "trail_extreme": 354.305,
+          "breakeven_done": false,
+          "current_price": 352.51,
+          "unrealized_pnl": -0.7490780432975651,
+          "unrealized_r": -0.37453902164878256
+        }
+      }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-21T22:15:37"
+  "updated": "2026-08-24T13:45:18"
 }
