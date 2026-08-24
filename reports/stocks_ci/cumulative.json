@@ -1335,11 +1335,11 @@
           "gross_pnl": null,
           "atr": 10.990219055132844,
           "initial_stop": 349.5861902362168,
-          "trail_extreme": 354.97,
+          "trail_extreme": 358.685,
           "breakeven_done": false,
-          "current_price": 353.88,
-          "unrealized_pnl": -0.16293762407109091,
-          "unrealized_r": -0.08146881203554546
+          "current_price": 357.82,
+          "unrealized_pnl": 1.5227508808575947,
+          "unrealized_r": 0.7613754404287973
         },
         "SPY:2026-08-24:power_tower": {
           "symbol": "SPY",
@@ -1367,11 +1367,11 @@
           "gross_pnl": null,
           "atr": 6.742798832772219,
           "initial_stop": 760.013260291807,
-          "trail_extreme": 763.935,
+          "trail_extreme": 764.08,
           "breakeven_done": false,
-          "current_price": 762.74,
-          "unrealized_pnl": -0.19530119350988467,
-          "unrealized_r": -0.12021688385761027
+          "current_price": 762.86,
+          "unrealized_pnl": -0.1324009078859753,
+          "unrealized_r": -0.081498859683952
         },
         "QQQ:2026-08-24:john_wick": {
           "symbol": "QQQ",
@@ -1399,11 +1399,11 @@
           "gross_pnl": null,
           "atr": 9.088897765189863,
           "initial_stop": 700.2063605587026,
-          "trail_extreme": 704.75,
+          "trail_extreme": 706.545,
           "breakeven_done": false,
-          "current_price": 703.55,
-          "unrealized_pnl": -0.3786360871715646,
-          "unrealized_r": -0.1893180435857823
+          "current_price": 705.185,
+          "unrealized_pnl": 0.4141916216814895,
+          "unrealized_r": 0.20709581084074474
         },
         "NVDA:2026-08-24:john_wick": {
           "symbol": "NVDA",
@@ -1431,11 +1431,11 @@
           "gross_pnl": null,
           "atr": 4.836074392097327,
           "initial_stop": 207.60652140197567,
-          "trail_extreme": 209.7,
+          "trail_extreme": 210.34,
           "breakeven_done": false,
-          "current_price": 209.15,
-          "unrealized_pnl": -0.44516222208564205,
-          "unrealized_r": -0.22258111104282105
+          "current_price": 209.11,
+          "unrealized_pnl": -0.4854566007677761,
+          "unrealized_r": -0.24272830038388807
         },
         "GLD:2026-08-24:john_wick": {
           "symbol": "GLD",
@@ -1463,11 +1463,11 @@
           "gross_pnl": null,
           "atr": 6.055629875814953,
           "initial_stop": 425.6923825310463,
-          "trail_extreme": 428.555,
+          "trail_extreme": 429.12,
           "breakeven_done": false,
-          "current_price": 427.975,
-          "unrealized_pnl": -0.14664801280462367,
-          "unrealized_r": -0.07332400640231183
+          "current_price": 428.76,
+          "unrealized_pnl": 0.49072611130351096,
+          "unrealized_r": 0.24536305565175548
         }
       }
     },
@@ -1617,15 +1617,15 @@
           "gross_pnl": null,
           "atr": 10.990219055132844,
           "initial_stop": 349.5861902362168,
-          "trail_extreme": 354.97,
+          "trail_extreme": 358.685,
           "breakeven_done": false,
-          "current_price": 353.88,
-          "unrealized_pnl": -0.16293762407109091,
-          "unrealized_r": -0.08146881203554546
+          "current_price": 357.82,
+          "unrealized_pnl": 1.5227508808575947,
+          "unrealized_r": 0.7613754404287973
         }
       }
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-24T14:27:03"
+  "updated": "2026-08-24T15:10:16"
 }
