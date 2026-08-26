@@ -1567,9 +1567,7 @@
           "initial_stop": 426.3310059572401,
           "trail_extreme": 422.87,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "SPY:2026-08-26:power_tower": {
           "symbol": "SPY",
           "session": "2026-08-26",
@@ -1577,32 +1575,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-26T10:00:00-04:00",
           "entry_time": "2026-08-26T10:00:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-26T16:00:00+00:00",
           "entry_price": 766.521665,
-          "exit_price": null,
+          "exit_price": 765.08,
           "stop_price": 768.276308197855,
           "target_price": 764.73,
           "quantity": 0.5218378269843162,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.7523153308393148,
+          "r_multiple": 0.8216285805355447,
+          "exit_reason": "session_close",
           "atr_fraction": 0.4775207385937135,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 100.0,
           "liquidation_price": 958.15208125,
           "notional": 400.0,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.7523153308393148,
           "atr": 3.811352791419678,
           "initial_stop": 768.276308197855,
           "trail_extreme": 764.84,
-          "breakeven_done": false,
-          "current_price": 764.905,
-          "unrealized_pnl": 0.8436369505616058,
-          "unrealized_r": 0.9213639570576785
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -1779,9 +1775,7 @@
           "initial_stop": 713.5956440558365,
           "trail_extreme": 708.48,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "SPY:2026-08-26:power_tower": {
           "symbol": "SPY",
           "session": "2026-08-26",
@@ -1789,34 +1783,32 @@
           "signal_type": "power_tower",
           "signal_time": "2026-08-26T10:00:00-04:00",
           "entry_time": "2026-08-26T10:00:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-08-26T16:00:00+00:00",
           "entry_price": 766.521665,
-          "exit_price": null,
+          "exit_price": 765.08,
           "stop_price": 768.276308197855,
           "target_price": 764.73,
           "quantity": 0.5218378269843162,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.7523153308393148,
+          "r_multiple": 0.8216285805355447,
+          "exit_reason": "session_close",
           "atr_fraction": 0.4775207385937135,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 100.0,
           "liquidation_price": 958.15208125,
           "notional": 400.0,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.7523153308393148,
           "atr": 3.811352791419678,
           "initial_stop": 768.276308197855,
           "trail_extreme": 764.84,
-          "breakeven_done": false,
-          "current_price": 764.905,
-          "unrealized_pnl": 0.8436369505616058,
-          "unrealized_r": 0.9213639570576785
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-26T16:02:28"
+  "updated": "2026-08-26T16:54:54"
 }
