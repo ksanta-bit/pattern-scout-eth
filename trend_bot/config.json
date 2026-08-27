@@ -1,0 +1,14 @@
+{
+  "symbols": ["BTCUSDT", "ETHUSDT"],
+  "timeframe": "1day",
+  "entry_n": 40,
+  "exit_m": 20,
+  "regime_period": 200,
+  "starting_capital": 100.0,
+  "compound": true,
+  "taker_fee_pct": 0.001,
+  "slippage_pct": 0.0005,
+  "poll_seconds": 3600,
+  "http_port": 8080,
+  "state_file": "state.json"
+}

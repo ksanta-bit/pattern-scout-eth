@@ -1,0 +1,44 @@
+name: Pattern Scout — Trend Bot (paper)
+
+# Terzo bot: trend/regime long-only (BTC+ETH), breakout 40/20 + gate SMA200, spot,
+# compounding. PAPER (nessun ordine reale, dati pubblici). Pubblica la dashboard in
+# docs/trend/ (pubblicata su Pages dal workflow crypto che deploya l'intero docs/).
+
+on:
+  schedule:
+    - cron: "5 */4 * * *"      # ogni 4 ore: aggiorna mark-to-market e agisce sulla nuova chiusura daily
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: "Azzera lo stato del trend bot"
+        type: boolean
+        default: false
+
+concurrency:
+  group: paper-trend
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run one paper pass (trend bot)
+        run: |
+          mkdir -p docs/trend
+          ${{ (github.event_name == 'workflow_dispatch' && inputs.reset) && 'rm -f docs/trend/state.json' || '' }}
+          STATE_DIR=docs/trend python3 trend_bot/trend_bot.py --once
+      - name: Commit state + dashboard
+        run: |
+          git config user.name "pattern-scout-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git pull --no-rebase -X ours || true
+          git add docs/trend/ || true
+          git commit -m "trend: update $(date -u +'%Y-%m-%dT%H:%MZ')" || echo "nothing to commit"
+          git push || echo "nothing to push"
