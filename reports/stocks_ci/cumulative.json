@@ -1654,6 +1654,35 @@
           "initial_stop": 354.95693133568943,
           "trail_extreme": 347.58,
           "breakeven_done": false
+        },
+        "SPY:2026-08-28:power_tower": {
+          "symbol": "SPY",
+          "session": "2026-08-28",
+          "side": "short",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-28T09:45:00-04:00",
+          "entry_time": "2026-08-28T09:45:00-04:00",
+          "exit_time": "2026-08-28T10:03:00-04:00",
+          "entry_price": 772.335502,
+          "exit_price": 771.684306,
+          "stop_price": 774.2929704317103,
+          "target_price": 771.53,
+          "quantity": 0.5179096376693557,
+          "pnl": 0.33726068441174784,
+          "r_multiple": 0.3326725424793046,
+          "exit_reason": "target",
+          "atr_fraction": 0.30148511130429545,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 99.99999999999999,
+          "liquidation_price": 965.4193775,
+          "notional": 399.99999999999994,
+          "fees": 0.0,
+          "gross_pnl": 0.33726068441174784,
+          "atr": 4.146141726840859,
+          "initial_stop": 774.2929704317103,
+          "trail_extreme": 771.48,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -1868,5 +1897,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-27T22:44:13"
+  "updated": "2026-08-28T22:51:50"
 }
