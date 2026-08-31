@@ -1685,7 +1685,72 @@
           "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "SPY:2026-08-31:power_tower": {
+          "symbol": "SPY",
+          "session": "2026-08-31",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-31T10:05:00-04:00",
+          "entry_time": "2026-08-31T10:05:00-04:00",
+          "exit_time": null,
+          "entry_price": 766.1607015,
+          "exit_price": null,
+          "stop_price": 764.1882974484176,
+          "target_price": 767.59,
+          "quantity": 0.5220836819441071,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.5075266612202908,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 100.0,
+          "liquidation_price": 574.620526125,
+          "notional": 400.0,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 3.595870206329729,
+          "initial_stop": 764.1882974484176,
+          "trail_extreme": 766.78,
+          "breakeven_done": false,
+          "current_price": 766.04,
+          "unrealized_pnl": -0.06301628353617433,
+          "unrealized_r": -0.06119511866910106
+        },
+        "GLD:2026-08-31:power_tower": {
+          "symbol": "GLD",
+          "session": "2026-08-31",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-08-31T10:00:00-04:00",
+          "entry_time": "2026-08-31T10:00:00-04:00",
+          "exit_time": null,
+          "entry_price": 405.43107000000003,
+          "exit_price": null,
+          "stop_price": 403.38729686408806,
+          "target_price": 407.845,
+          "quantity": 0.9785821943038486,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.2659288294372444,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 99.18690652988933,
+          "liquidation_price": 304.0733025,
+          "notional": 396.7476261195573,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 5.320972543647966,
+          "initial_stop": 403.38729686408806,
+          "trail_extreme": 407.17,
+          "breakeven_done": false,
+          "current_price": 406.64,
+          "unrealized_pnl": 1.1830373721597054,
+          "unrealized_r": 0.5915186860798527
+        }
+      }
     },
     "on": {
       "trades": {
@@ -1897,5 +1962,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-08-28T22:51:50"
+  "updated": "2026-08-31T19:21:24"
 }
