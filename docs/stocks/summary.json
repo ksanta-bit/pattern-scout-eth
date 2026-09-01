@@ -1,12 +1,12 @@
 {
-  "total_trades":62,
-  "wins":30,
-  "losses":32,
-  "win_rate":0.4838709677,
-  "total_pnl":-19.6505807567,
-  "avg_r":-0.186266216,
-  "profit_factor":0.561413891,
+  "total_trades":64,
+  "wins":31,
+  "losses":33,
+  "win_rate":0.484375,
+  "total_pnl":-19.4760315013,
+  "avg_r":-0.1926214952,
+  "profit_factor":0.5799222898,
   "starting_capital":100.0,
-  "ending_equity":80.3494192433,
-  "open_positions":2
+  "ending_equity":80.5239684987,
+  "open_positions":0
 }
