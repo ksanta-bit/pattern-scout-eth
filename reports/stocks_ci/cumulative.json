@@ -2091,7 +2091,40 @@
           "breakeven_done": false
         }
       },
-      "open": {}
+      "open": {
+        "NVDA:2026-09-04:john_wick": {
+          "symbol": "NVDA",
+          "session": "2026-09-04",
+          "side": "short",
+          "signal_type": "john_wick",
+          "signal_time": "2026-09-04T09:40:00-04:00",
+          "entry_time": "2026-09-04T09:45:00-04:00",
+          "exit_time": null,
+          "entry_price": 232.78343400000003,
+          "exit_price": null,
+          "stop_price": 235.4019227171958,
+          "target_price": 229.885,
+          "quantity": 0.7637993575706054,
+          "pnl": null,
+          "r_multiple": null,
+          "exit_reason": null,
+          "atr_fraction": 0.6410731488571195,
+          "status": "open",
+          "leverage": 4.0,
+          "margin": 44.44995933556986,
+          "liquidation_price": 290.97929250000004,
+          "notional": 177.79983734227943,
+          "fees": null,
+          "gross_pnl": null,
+          "atr": 6.060150868783145,
+          "initial_stop": 235.4019227171958,
+          "trail_extreme": 230.52,
+          "breakeven_done": false,
+          "current_price": 231.5,
+          "unrealized_pnl": 0.9802860646842938,
+          "unrealized_r": 0.49014303234214696
+        }
+      }
     },
     "on": {
       "trades": {
@@ -2303,5 +2336,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-09-03T23:36:02"
+  "updated": "2026-09-04T16:42:17"
 }
