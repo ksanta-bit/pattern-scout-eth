@@ -1,13 +1,13 @@
 {
   "starting_capital": 100.0,
   "created": "2026-08-27T12:17:55+00:00",
-  "updated": "2026-09-13T18:44:43+00:00",
+  "updated": "2026-09-13T22:21:27+00:00",
   "sleeves": {
     "BTCUSDT": {
       "equity": 47.845952156892395,
       "position": null,
       "last_acted": "2026-09-12",
-      "last_close": 77364.99,
+      "last_close": 76745.0,
       "bull": true
     },
     "ETHUSDT": {
@@ -17,13 +17,13 @@
         "entry_price": 2504.9818649999997,
         "qty": 0.01993028400626765,
         "entry_time": "2026-08-26",
-        "current_price": 2508.52,
-        "value": 49.995516035402524,
-        "unrealized_pct": 0.14124393671011148,
+        "current_price": 2478.43,
+        "value": 49.39581378965393,
+        "unrealized_pct": -1.0599623642385092,
         "cap_at_entry": 50.0
       },
       "last_acted": "2026-09-12",
-      "last_close": 2508.52,
+      "last_close": 2478.43,
       "bull": true
     }
   },
