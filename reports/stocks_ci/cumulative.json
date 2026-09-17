@@ -2553,9 +2553,7 @@
           "initial_stop": 712.6516434325636,
           "trail_extreme": 716.53,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "SPY:2026-09-17:john_wick": {
           "symbol": "SPY",
           "session": "2026-09-17",
@@ -2563,32 +2561,30 @@
           "signal_type": "john_wick",
           "signal_time": "2026-09-17T09:55:00-04:00",
           "entry_time": "2026-09-17T10:15:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-09-17T16:00:00+00:00",
           "entry_price": 761.40225,
-          "exit_price": null,
+          "exit_price": 762.575,
           "stop_price": 759.2832996357238,
           "target_price": 763.36,
           "quantity": 0.5253464906361913,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.6161000968936273,
+          "r_multiple": 0.553457985506261,
+          "exit_reason": "session_close",
           "atr_fraction": 0.6006334429319555,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 100.0,
           "liquidation_price": 571.0516875,
           "notional": 400.0,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.6161000968936273,
           "atr": 4.545201457104502,
           "initial_stop": 759.2832996357238,
           "trail_extreme": 762.78,
-          "breakeven_done": false,
-          "current_price": 762.15,
-          "unrealized_pnl": 0.39282783837321017,
-          "unrealized_r": 0.35288698244492167
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -2829,5 +2825,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-09-17T17:25:09"
+  "updated": "2026-09-17T20:27:16"
 }
