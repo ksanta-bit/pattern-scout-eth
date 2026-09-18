@@ -2582,6 +2582,35 @@
           "initial_stop": 759.2832996357238,
           "trail_extreme": 762.78,
           "breakeven_done": false
+        },
+        "AAPL:2026-09-18:power_tower": {
+          "symbol": "AAPL",
+          "session": "2026-09-18",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-09-18T09:45:00-04:00",
+          "entry_time": "2026-09-18T09:45:00-04:00",
+          "exit_time": "2026-09-18T10:21:00-04:00",
+          "entry_price": 336.10220699999996,
+          "exit_price": 332.9872294979365,
+          "stop_price": 333.05384026598966,
+          "target_price": 338.41,
+          "quantity": 0.6560890386600189,
+          "pnl": -2.0437025947764167,
+          "r_multiple": -1.0218512973882083,
+          "exit_reason": "stop",
+          "atr_fraction": 0.3874626858401983,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 55.12824347053516,
+          "liquidation_price": 252.07665525,
+          "notional": 220.51297388214064,
+          "fees": 0.0,
+          "gross_pnl": -2.0437025947764167,
+          "atr": 7.794298936041498,
+          "initial_stop": 333.05384026598966,
+          "trail_extreme": 336.63,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -2819,11 +2848,40 @@
           "initial_stop": 329.7121340856987,
           "trail_extreme": 334.74,
           "breakeven_done": false
+        },
+        "AAPL:2026-09-18:power_tower": {
+          "symbol": "AAPL",
+          "session": "2026-09-18",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-09-18T09:45:00-04:00",
+          "entry_time": "2026-09-18T09:45:00-04:00",
+          "exit_time": "2026-09-18T10:21:00-04:00",
+          "entry_price": 336.10220699999996,
+          "exit_price": 332.9872294979365,
+          "stop_price": 333.05384026598966,
+          "target_price": 338.41,
+          "quantity": 0.6560890386600189,
+          "pnl": -2.0437025947764167,
+          "r_multiple": -1.0218512973882083,
+          "exit_reason": "stop",
+          "atr_fraction": 0.3874626858401983,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 55.12824347053516,
+          "liquidation_price": 252.07665525,
+          "notional": 220.51297388214064,
+          "fees": 0.0,
+          "gross_pnl": -2.0437025947764167,
+          "atr": 7.794298936041498,
+          "initial_stop": 333.05384026598966,
+          "trail_extreme": 336.63,
+          "breakeven_done": false
         }
       },
       "open": {}
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-09-17T22:59:29"
+  "updated": "2026-09-18T16:53:07"
 }
