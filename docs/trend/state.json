@@ -1,7 +1,7 @@
 {
   "starting_capital": 100.0,
   "created": "2026-08-27T12:17:55+00:00",
-  "updated": "2026-10-07T05:47:23+00:00",
+  "updated": "2026-10-07T15:29:50+00:00",
   "sleeves": {
     "BTCUSDT": {
       "equity": 47.845952156892395,
@@ -10,13 +10,13 @@
         "entry_price": 87262.25932499999,
         "qty": 0.0005474781835607379,
         "entry_time": "2026-09-22",
-        "current_price": 84231.16,
-        "value": 46.11472247601389,
-        "unrealized_pct": -3.4735512791514433,
+        "current_price": 83075.19,
+        "value": 45.48185412016318,
+        "unrealized_pct": -4.798259129878413,
         "cap_at_entry": 47.845952156892395
       },
       "last_acted": "2026-10-06",
-      "last_close": 84231.16,
+      "last_close": 83075.19,
       "bull": true
     },
     "ETHUSDT": {
@@ -26,13 +26,13 @@
         "entry_price": 2504.9818649999997,
         "qty": 0.01993028400626765,
         "entry_time": "2026-08-26",
-        "current_price": 2617.26,
-        "value": 52.16273511824407,
-        "unrealized_pct": 4.4821935267783,
+        "current_price": 2561.13,
+        "value": 51.04404827697227,
+        "unrealized_pct": 2.2414587420576115,
         "cap_at_entry": 50.0
       },
       "last_acted": "2026-10-06",
-      "last_close": 2617.26,
+      "last_close": 2561.13,
       "bull": true
     }
   },
