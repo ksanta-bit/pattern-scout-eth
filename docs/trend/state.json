@@ -1,7 +1,7 @@
 {
   "starting_capital": 100.0,
   "created": "2026-08-27T12:17:55+00:00",
-  "updated": "2026-10-07T21:14:04+00:00",
+  "updated": "2026-10-08T05:52:58+00:00",
   "sleeves": {
     "BTCUSDT": {
       "equity": 47.845952156892395,
@@ -10,29 +10,20 @@
         "entry_price": 87262.25932499999,
         "qty": 0.0005474781835607379,
         "entry_time": "2026-09-22",
-        "current_price": 83360.14,
-        "value": 45.63785802856881,
-        "unrealized_pct": -4.471714754103395,
+        "current_price": 82788.38,
+        "value": 45.32483190233612,
+        "unrealized_pct": -5.1269350113173795,
         "cap_at_entry": 47.845952156892395
       },
-      "last_acted": "2026-10-06",
-      "last_close": 83360.14,
+      "last_acted": "2026-10-07",
+      "last_close": 82788.38,
       "bull": true
     },
     "ETHUSDT": {
-      "equity": 50.0,
-      "position": {
-        "symbol": "ETHUSDT",
-        "entry_price": 2504.9818649999997,
-        "qty": 0.01993028400626765,
-        "entry_time": "2026-08-26",
-        "current_price": 2572.25,
-        "value": 51.265673035121964,
-        "unrealized_pct": 2.685374131441076,
-        "cap_at_entry": 50.0
-      },
-      "last_acted": "2026-10-06",
-      "last_close": 2572.25,
+      "equity": 51.07636290662428,
+      "position": null,
+      "last_acted": "2026-10-07",
+      "last_close": 2566.6,
       "bull": true
     }
   },
@@ -47,6 +38,18 @@
       "qty": 0.0006205200422178595,
       "pnl": -2.154,
       "return_pct": -4.07,
+      "reason": "stop/donchian"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "side": "long",
+      "entry_time": "2026-08-26",
+      "exit_time": "2026-10-07",
+      "entry_price": 2504.98,
+      "exit_price": 2565.32,
+      "qty": 0.01993028400626765,
+      "pnl": 1.0764,
+      "return_pct": 2.41,
       "reason": "stop/donchian"
     }
   ]
