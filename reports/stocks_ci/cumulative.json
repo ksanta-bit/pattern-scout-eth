@@ -3945,9 +3945,7 @@
           "initial_stop": 225.5315378358091,
           "trail_extreme": 227.75054099999997,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "AAPL:2026-10-12:john_wick": {
           "symbol": "AAPL",
           "session": "2026-10-12",
@@ -3955,32 +3953,30 @@
           "signal_type": "john_wick",
           "signal_time": "2026-10-12T09:45:00-04:00",
           "entry_time": "2026-10-12T09:50:00-04:00",
-          "exit_time": null,
+          "exit_time": "2026-10-12T16:00:00+00:00",
           "entry_price": 340.811824,
-          "exit_price": null,
+          "exit_price": 339.96,
           "stop_price": 343.7976523723585,
           "target_price": 337.62,
           "quantity": 0.6698308645316363,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.5705780063488113,
+          "r_multiple": 0.28528900317440564,
+          "exit_reason": "session_close",
           "atr_fraction": 0.7341620602897906,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 57.07156967813097,
           "liquidation_price": 426.01478,
           "notional": 228.28627871252388,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.5705780063488113,
           "atr": 6.30650948943402,
           "initial_stop": 343.7976523723585,
           "trail_extreme": 339.07,
-          "breakeven_done": false,
-          "current_price": 341.045,
-          "unrealized_pnl": -0.15618848166803853,
-          "unrealized_r": -0.07809424083401927
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -4366,5 +4362,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-10-12T21:31:29"
+  "updated": "2026-10-13T02:42:20"
 }
