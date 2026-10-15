@@ -4119,6 +4119,35 @@
           "initial_stop": 377.612976079183,
           "trail_extreme": 374.88,
           "breakeven_done": false
+        },
+        "AAPL:2026-10-15:power_tower": {
+          "symbol": "AAPL",
+          "session": "2026-10-15",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-10-15T10:00:00-04:00",
+          "entry_time": "2026-10-15T10:00:00-04:00",
+          "exit_time": "2026-10-15T11:17:00-04:00",
+          "entry_price": 345.66912,
+          "exit_price": 343.3818857068463,
+          "stop_price": 343.45057582201065,
+          "target_price": 347.72,
+          "quantity": 0.9014920774814432,
+          "pnl": -2.0619235946219696,
+          "r_multiple": -1.030961797310985,
+          "exit_reason": "stop",
+          "atr_fraction": 0.47618483597031064,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 77.90449327749558,
+          "liquidation_price": 259.25184,
+          "notional": 311.6179731099823,
+          "fees": 0.0,
+          "gross_pnl": -2.0619235946219696,
+          "atr": 4.7880567119575055,
+          "initial_stop": 343.45057582201065,
+          "trail_extreme": 346.23,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -4536,5 +4565,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-10-14T23:46:44"
+  "updated": "2026-10-15T17:33:28"
 }
