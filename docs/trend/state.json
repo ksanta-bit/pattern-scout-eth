@@ -1,20 +1,20 @@
 {
   "starting_capital": 100.0,
   "created": "2026-08-27T12:17:55+00:00",
-  "updated": "2026-11-03T02:12:38+00:00",
+  "updated": "2026-11-03T11:50:18+00:00",
   "sleeves": {
     "BTCUSDT": {
       "equity": 44.20043033426164,
       "position": null,
       "last_acted": "2026-11-02",
-      "last_close": 76964.0,
+      "last_close": 77146.32,
       "bull": true
     },
     "ETHUSDT": {
       "equity": 51.07636290662428,
       "position": null,
       "last_acted": "2026-11-02",
-      "last_close": 2253.69,
+      "last_close": 2267.87,
       "bull": true
     }
   },
