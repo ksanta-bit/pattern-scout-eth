@@ -4989,9 +4989,7 @@
           "initial_stop": 397.03195586509503,
           "trail_extreme": 402.19,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "QQQ:2026-11-03:power_tower": {
           "symbol": "QQQ",
           "session": "2026-11-03",
@@ -4999,32 +4997,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-11-03T09:45:00-05:00",
           "entry_time": "2026-11-03T09:45:00-05:00",
-          "exit_time": null,
+          "exit_time": "2026-11-03T16:00:00+00:00",
           "entry_price": 685.7853155,
-          "exit_price": null,
+          "exit_price": 687.88,
           "stop_price": 689.9926834520439,
           "target_price": 683.2,
           "quantity": 0.4753565703775478,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -0.9957220399429948,
+          "r_multiple": -0.4978610199714974,
+          "exit_reason": "session_close",
           "atr_fraction": 0.3659168893284476,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 81.49813889784114,
           "liquidation_price": 857.2316443750001,
           "notional": 325.9925555913646,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -0.9957220399429948,
           "atr": 9.756313808175982,
           "initial_stop": 689.9926834520439,
           "trail_extreme": 683.86,
-          "breakeven_done": false,
-          "current_price": 683.955,
-          "unrealized_pnl": 0.8700524987888587,
-          "unrealized_r": 0.43502624939442935
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -5468,5 +5464,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-11-03T19:55:59"
+  "updated": "2026-11-04T00:19:10"
 }
