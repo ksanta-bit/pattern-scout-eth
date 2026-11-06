@@ -5279,9 +5279,7 @@
           "initial_stop": 196.35215762852394,
           "trail_extreme": 190.33,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "SPY:2026-11-06:power_tower": {
           "symbol": "SPY",
           "session": "2026-11-06",
@@ -5289,30 +5287,27 @@
           "signal_type": "power_tower",
           "signal_time": "2026-11-06T09:50:00-05:00",
           "entry_time": "2026-11-06T09:50:00-05:00",
-          "exit_time": null,
+          "exit_time": "2026-11-06T16:00:00+00:00",
           "entry_price": 739.722026,
-          "exit_price": null,
+          "exit_price": 739.48,
           "stop_price": 744.8002593640132,
           "target_price": 734.605,
           "quantity": 0.3938377495947659,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.09531897518342669,
+          "r_multiple": 0.047659487591713345,
+          "exit_reason": "session_close",
           "atr_fraction": 0.47052774517536744,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 72.83261451138023,
           "liquidation_price": 924.6525325,
           "notional": 291.3304580455209,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.09531897518342669,
           "atr": 9.276817456052793,
           "initial_stop": 744.8002593640132,
           "trail_extreme": 735.125,
-          "breakeven_done": false,
-          "current_price": 737.915,
-          "unrealized_pnl": 0.7116750532992568,
-          "unrealized_r": 0.3558375266496284
+          "breakeven_done": false
         },
         "TSLA:2026-11-06:john_wick": {
           "symbol": "TSLA",
@@ -5321,32 +5316,30 @@
           "signal_type": "john_wick",
           "signal_time": "2026-11-06T10:20:00-05:00",
           "entry_time": "2026-11-06T10:25:00-05:00",
-          "exit_time": null,
+          "exit_time": "2026-11-06T16:00:00+00:00",
           "entry_price": 360.492887,
-          "exit_price": null,
+          "exit_price": 358.69,
           "stop_price": 366.8219544054508,
           "target_price": 347.705,
           "quantity": 0.3160023225977227,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.5697164793812399,
+          "r_multiple": 0.28485823969061996,
+          "exit_reason": "session_close",
           "atr_fraction": 0.40642624912409986,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 28.4791473929896,
           "liquidation_price": 450.61610874999997,
           "notional": 113.9165895719584,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.5697164793812399,
           "atr": 17.38322762180339,
           "initial_stop": 366.8219544054508,
           "trail_extreme": 356.1,
-          "breakeven_done": false,
-          "current_price": 360.16,
-          "unrealized_pnl": 0.10519306516257898,
-          "unrealized_r": 0.05259653258128949
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -5784,9 +5777,7 @@
           "initial_stop": 364.7005355088329,
           "trail_extreme": 361.51,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "TSLA:2026-11-06:john_wick": {
           "symbol": "TSLA",
           "session": "2026-11-06",
@@ -5794,34 +5785,32 @@
           "signal_type": "john_wick",
           "signal_time": "2026-11-06T10:20:00-05:00",
           "entry_time": "2026-11-06T10:25:00-05:00",
-          "exit_time": null,
+          "exit_time": "2026-11-06T16:00:00+00:00",
           "entry_price": 360.492887,
-          "exit_price": null,
+          "exit_price": 358.69,
           "stop_price": 366.8219544054508,
           "target_price": 347.705,
           "quantity": 0.3160023225977227,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": 0.5697164793812399,
+          "r_multiple": 0.28485823969061996,
+          "exit_reason": "session_close",
           "atr_fraction": 0.40642624912409986,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 28.4791473929896,
           "liquidation_price": 450.61610874999997,
           "notional": 113.9165895719584,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": 0.5697164793812399,
           "atr": 17.38322762180339,
           "initial_stop": 366.8219544054508,
           "trail_extreme": 356.1,
-          "breakeven_done": false,
-          "current_price": 360.0,
-          "unrealized_pnl": 0.1557534367782225,
-          "unrealized_r": 0.07787671838911125
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-11-06T19:49:08"
+  "updated": "2026-11-06T23:51:00"
 }
