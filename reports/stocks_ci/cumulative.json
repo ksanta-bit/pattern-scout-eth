@@ -5946,6 +5946,35 @@
           "initial_stop": 358.0849132641544,
           "trail_extreme": 353.92,
           "breakeven_done": false
+        },
+        "QQQ:2026-11-17:power_tower": {
+          "symbol": "QQQ",
+          "session": "2026-11-17",
+          "side": "long",
+          "signal_type": "power_tower",
+          "signal_time": "2026-11-17T10:10:00-05:00",
+          "entry_time": "2026-11-17T10:10:00-05:00",
+          "exit_time": "2026-11-17T10:40:00-05:00",
+          "entry_price": 660.292032,
+          "exit_price": 654.401461291545,
+          "stop_price": 654.532367765098,
+          "target_price": 663.32,
+          "quantity": 0.3472424638715156,
+          "pnl": -2.0454562864132595,
+          "r_multiple": -1.0227281432066297,
+          "exit_reason": "stop",
+          "atr_fraction": 0.24310497985357885,
+          "status": "closed",
+          "leverage": 4.0,
+          "margin": 57.3203580166024,
+          "liquidation_price": 495.219024,
+          "notional": 229.2814320664096,
+          "fees": 0.0,
+          "gross_pnl": -2.0454562864132595,
+          "atr": 14.273668939607878,
+          "initial_stop": 654.532367765098,
+          "trail_extreme": 660.58,
+          "breakeven_done": false
         }
       },
       "open": {}
@@ -6450,5 +6479,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-11-16T22:42:35"
+  "updated": "2026-11-17T21:28:59"
 }
