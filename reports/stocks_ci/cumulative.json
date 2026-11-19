@@ -6062,9 +6062,7 @@
           "initial_stop": 342.01016552785313,
           "trail_extreme": 344.585,
           "breakeven_done": false
-        }
-      },
-      "open": {
+        },
         "SPY:2026-11-18:power_tower": {
           "symbol": "SPY",
           "session": "2026-11-18",
@@ -6072,32 +6070,30 @@
           "signal_type": "power_tower",
           "signal_time": "2026-11-18T10:10:00-05:00",
           "entry_time": "2026-11-18T10:10:00-05:00",
-          "exit_time": null,
+          "exit_time": "2026-11-18T16:00:00+00:00",
           "entry_price": 732.441459,
-          "exit_price": null,
+          "exit_price": 730.5,
           "stop_price": 725.2002140157736,
           "target_price": 735.01,
           "quantity": 0.276195599562863,
-          "pnl": null,
-          "r_multiple": null,
-          "exit_reason": null,
+          "pnl": -0.5362224325317189,
+          "r_multiple": -0.26811121626585943,
+          "exit_reason": "session_close",
           "atr_fraction": 0.3759397323625628,
-          "status": "open",
+          "status": "closed",
           "leverage": 4.0,
           "margin": 50.57427697830078,
           "liquidation_price": 549.33109425,
           "notional": 202.29710791320312,
-          "fees": null,
-          "gross_pnl": null,
+          "fees": 0.0,
+          "gross_pnl": -0.5362224325317189,
           "atr": 12.621703936906155,
           "initial_stop": 725.2002140157736,
           "trail_extreme": 734.03,
-          "breakeven_done": false,
-          "current_price": 730.33,
-          "unrealized_pnl": -0.5831756844573943,
-          "unrealized_r": -0.29158784222869716
+          "breakeven_done": false
         }
-      }
+      },
+      "open": {}
     },
     "on": {
       "trades": {
@@ -6599,5 +6595,5 @@
     }
   },
   "starting_capital": 100.0,
-  "updated": "2026-11-18T21:03:11"
+  "updated": "2026-11-19T02:29:12"
 }
